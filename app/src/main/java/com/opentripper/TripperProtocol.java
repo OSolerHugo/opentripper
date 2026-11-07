@@ -125,4 +125,65 @@ public final class TripperProtocol {
         pkt[1] = 0x05;
         return withCrc(pkt);
     }
+
+    /** Mapeamento de nomes de ícones já conhecidos para apoiar a exploração */
+    public static String getIconName(int code) {
+        int c = code & 0xFF;
+        switch (c) {
+            case 0x00: return "Destino (Chegada)";
+            case 0x01: return "Destino à Esquerda";
+            case 0x02: return "Destino à Direita";
+            case 0x03: return "Fusão à Direita (Merge Right)";
+            case 0x04: return "Fusão à Esquerda (Merge Left)";
+            case 0x05: return "Bifurcação à Direita (Fork Right)";
+            case 0x06: return "Bifurcação à Esquerda (Fork Left)";
+            case 0x07: return "Saída/Rampa à Direita";
+            case 0x08: return "Saída/Rampa à Esquerda";
+            case 0x09: return "Seguir Reto";
+            case 0x0A: return "Rotatória (Horário) Base";
+            case 0x14: return "Virar à Esquerda";
+            case 0x15: return "Virar à Direita";
+            case 0x16: return "Curva Acentuada à Esquerda";
+            case 0x17: return "Curva Acentuada à Direita";
+            case 0x18: return "Curva Suave / Mantenha Esquerda";
+            case 0x19: return "Curva Suave / Mantenha Direita";
+            case 0x1A: return "Retorno (Horário)";
+            case 0x1B: return "Fusão de Pista";
+            case 0x1C: return "Recalculando Rota";
+            case 0x1D: return "Entrada de Rampa Direita";
+            case 0x1E: return "Entrada de Rampa Esquerda";
+            case 0x1F: return "Entrada Suave Direita";
+            case 0x20: return "Entrada Suave Esquerda";
+            case 0x21: return "Entrada Acentuada Direita";
+            case 0x22: return "Entrada Acentuada Esquerda";
+            case 0x27: return "Saída Suave Direita";
+            case 0x28: return "Saída Suave Esquerda";
+            case 0x2B: return "Manter Faixa Esquerda";
+            case 0x2C: return "Manter Faixa Direita";
+            case 0x2D: return "Saída Acentuada Direita";
+            case 0x2E: return "Saída Acentuada Esquerda";
+            case 0x2F: return "Mantenha Direita (Sharp)";
+            case 0x30: return "Mantenha Esquerda (Sharp)";
+            case 0x31: return "Rotatória (Anti-horário) Base";
+            case 0x32: return "Rotatória 1ª Saída";
+            case 0x33: return "Rotatória 2ª Saída";
+            case 0x34: return "Rotatória 3ª Saída";
+            case 0x35: return "Rotatória 4ª Saída";
+            case 0x36: return "Rotatória 5ª Saída";
+            case 0x37: return "Rotatória 6ª Saída";
+            case 0x38: return "Rotatória 7ª Saída";
+            case 0x39: return "Rotatória 8ª Saída";
+            case 0x3A: return "Rotatória 9ª Saída";
+            case 0x3C: return "Partida / Ícone de Radar";
+            case 0x3D: return "Retorno (Anti-horário)";
+            case 0x3E: return "Balsa (Barco)";
+            case 0x3F: return "Trem / Ferry";
+            case 0x41: return "Modo Bússola";
+            case 0x42: return "Sem Sinal de Dados (No Data)";
+            case 0x44: return "Bateria Fraca";
+            case 0x45: return "Rota Iniciada";
+            case 0xFF: return "Em Branco (Blank)";
+            default: return "❓ NÃO DOCUMENTADO (Novo!)";
+        }
+    }
 }

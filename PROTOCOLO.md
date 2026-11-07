@@ -23,7 +23,11 @@ Documento de referência técnica com as descobertas, comportamentos de hardware
 * **Characteristic UUID:** `01FF0101-BA5E-F4EE-5CA1-EB1E5E4B1CE0`
 * **Propriedades da Característica:** `WRITE NO RESPONSE`
   * O canal **não possui** a propriedade padrão `NOTIFY`.
-  * **Canal Reverso (Pod → Celular):** No fluxo nativo, o aplicativo hospeda um `GATT Server` local com o mesmo UUID, e o Tripper Pod escreve de volta no celular dentro da mesma conexão BLE.
+* **Canal Reverso Obrigatório (Pod → Celular): Dual-Role GATT**
+  * O Tripper Pod **não possui** suporte a notificações (`NOTIFY`) em sua característica BLE.
+  * O Pod implementa uma arquitetura *dual-role*: além de ser um servidor GATT ao qual o celular conecta, ele age ativamente como um *cliente GATT* que procura um serviço idêntico (`01FF0100...`) hospedado no celular e tenta escrever dados de retorno.
+  * **Causa do fracasso no Web Bluetooth (Google Chrome / Web BLE):** A API Web Bluetooth do navegador suporta apenas ser cliente GATT, sendo incapaz de instanciar um `GATT Server` local. Ao não encontrar o canal reverso no celular, o firmware do Tripper Pod encerra a conexão por timeout após ~1 a 2 segundos.
+  * **Solução com Sucesso no APK Nativo Android:** O aplicativo nativo executa `BluetoothManager.openGattServer()` criando o serviço NXP local com permissão de escrita antes de se conectar ao Pod, mantendo a conexão 100% estável.
 
 ---
 
@@ -98,14 +102,80 @@ Byte [14..17]: 0x00 (zeros)
 Byte [18..19]: CRC-16
 ```
 
-### 5.5 Códigos de Ícones Comuns (Byte `[2]`)
-* `0x09`: Seguir em frente (reta)
-* `0x14`: Virar à esquerda (90°)
-* `0x15`: Virar à direita (90°)
-* `0x16` / `0x17`: Curva acentuada esquerda / direita
-* `0x18` / `0x19`: Curva suave / mantenha esquerda / direita
-* `0x32`: Rotatória saída 1 (soma `+ (saída - 1)`)
-* `0x3D`: Retorno (U-Turn)
-* `0x41`: Modo tela cheia de Bússola (direção no byte `[14]`)
-* `0x42`: Alerta de perda de dados móveis
-* `0x44`: Alerta de bateria fraca
+### 5.5 Catálogo Completo de Ícones Conhecidos & Áreas de Exploração (Byte `[2]`)
+
+| Faixa / Código Hex | Significado Mapeado | Status de Teste |
+|---|---|---|
+| `0x00` | Tela Limpa / Sem ícone | Documentado |
+| `0x01` | Destino alcançado / Bandeira quadriculada | Documentado |
+| `0x02` | Início de rota / Ponto de partida | Documentado |
+| `0x03..0x08` | Variações de partida / Manobras preliminares | Não testado |
+| `0x09` | Seguir em frente (Seta reta para cima) | **Confirmado na Hunter 350** |
+| `0x0A` | Seguir em frente (Variação de pista) | Documentado |
+| `0x0B..0x13` | Faixa não catalogada | 🔍 **Alvo de Exploração** |
+| `0x14` | Virar à esquerda (90°) | **Confirmado na Hunter 350** |
+| `0x15` | Virar à direita (90°) | **Confirmado na Hunter 350** |
+| `0x16` | Curva fechada à esquerda (Sharp Left) | Documentado |
+| `0x17` | Curva fechada à direita (Sharp Right) | Documentado |
+| `0x18` | Curva suave à esquerda / Mantenha à esquerda | Documentado |
+| `0x19` | Curva suave à direita / Mantenha à direita | Documentado |
+| `0x1A` | Saída de rodovia à esquerda | Documentado |
+| `0x1B` | Saída de rodovia à direita | Documentado |
+| `0x1C` | Bifurcação à esquerda | Documentado |
+| `0x1D` | Bifurcação à direita | Documentado |
+| `0x1E` | Mantenha o centro da pista | Documentado |
+| `0x1F..0x22` | Faixa não catalogada | 🔍 **Alvo de Exploração** |
+| `0x23` | Cruzamento / Alerta de pedestres | Suspeito |
+| `0x24..0x27` | Faixa não catalogada | 🔍 **Alvo de Exploração** |
+| `0x28` | Alerta de radar / Fiscalização | Suspeito |
+| `0x29..0x31` | Faixa não catalogada | 🔍 **Alvo de Exploração** |
+| `0x32` | Rotatória - 1ª Saída | **Confirmado na Hunter 350** |
+| `0x33` | Rotatória - 2ª Saída | Documentado |
+| `0x34` | Rotatória - 3ª Saída | Documentado |
+| `0x35` | Rotatória - 4ª Saída | Documentado |
+| `0x36` | Rotatória - 5ª Saída | Documentado |
+| `0x37` | Rotatória - 6ª Saída | Documentado |
+| `0x38` | Rotatória - 7ª Saída | Documentado |
+| `0x39..0x3C` | Rotatória variações / Saídas adicionais | Documentado |
+| `0x3D` | Retorno (U-Turn) | Documentado |
+| `0x3E` | Retorno à direita (U-Turn inverso) | Documentado |
+| `0x3F` | Faixa não catalogada | 🔍 **Alvo de Exploração** |
+| `0x40` | Alerta geral / Perigo na pista | Suspeito |
+| `0x41` | Tela cheia de Bússola (orientação no byte `[14]`) | Documentado |
+| `0x42` | Alerta de perda de conexão móvel (Sem GPS / Sem Internet) | Documentado |
+| `0x43` | Alerta de limite de velocidade excedido | Suspeito |
+| `0x44` | Alerta de bateria fraca do smartphone | Documentado |
+| `0x45` | Chamada recebida (Overlay) | Documentado |
+| `0x46..0xFF` | Faixa estendida de firmware NXP | 🔍 **Alvo de Exploração Aberto** |
+
+---
+
+## 6. Limites de Customização do Tripper Pod
+
+Compreender o que é e o que não é fisicamente possível alterar no painel é fundamental para orientar o desenvolvimento:
+
+### O que o Painel FAZ (Controle Total por Software):
+1. **Renderização de Ícones Vetoriais Pré-Gravados na ROM:** Qualquer um dos 256 índices (`0x00` a `0xFF`) pode ser invocado e exibido no centro da tela.
+2. **Campos Numéricos e Texto Dinâmico:**
+   * Distância primária da manobra (metros ou décimos de km).
+   * Distância secundária / radar.
+   * Linha inferior de status (hora prevista de chegada ETA ou distância total restante).
+3. **Controle de Iluminação e Contraste:** Alternância entre modo Dia (fundo claro/alto brilho) e modo Noite (fundo escuro).
+4. **Sincronização de Relógio:** Acerto preciso de horas e minutos (`0x50`).
+5. **Telas Especiais:** Modo bússola digital (`0x41`) e alertas de sistema.
+
+### O que o Painel NÃO FAZ (Limitações Físicas do Firmware Original):
+1. **Envio de Imagens Arbitrárias / Bitmaps (Ex: Fotos, Logos customizados):**
+   * O display do Tripper Pod é acionado por um microcontrolador NXP que possui uma tabela fixa de glifos/ícones pré-compilados na memória flash. O protocolo BLE de 20 bytes **não possui** largura de banda nem comando conhecido para transferir buffers de pixels brutos (framebuffer).
+2. **Mudança de Tipografia / Fontes:** As fontes dos números e unidades são renderizadas internamente pelo firmware.
+3. **Modificação do Firmware Interno via BLE:** Não é seguro tentar flashar um novo firmware por BLE sem o bootloader oficial assinado da Royal Enfield / NXP, sob risco de inutilizar (*brickar*) o módulo.
+
+---
+
+## 7. Metodologia de Exploração de Ícones (Fuzzing)
+
+O OpenTripper implementa a partir da versão **v0.3.1** um **Explorador Interativo de Ícones** nativo:
+1. Ao conectar à moto, a interface permite enviar sequencialmente qualquer código hexadecimal de `0x00` a `0xFF`.
+2. Para cada código, o pacote de navegação é montado e mantido no loop contínuo de keepalive (1,5s), permitindo ao piloto observar o visor com calma.
+3. Botões de salto rápido (`Pular p/ Ocultos`) avançam diretamente para os blocos não documentados (`0x0B`, `0x12`, `0x23`, `0x28`, `0x40`, `0x46`, etc.).
+4. O botão **"📝 Anotar O Que Apareceu"** abre um formulário que grava imediatamente a descrição do que surgiu no painel no arquivo persistente `opentripper_logs.txt`.

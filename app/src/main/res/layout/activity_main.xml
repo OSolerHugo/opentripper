@@ -4,24 +4,45 @@
     android:layout_height="match_parent"
     android:background="#0B0F19"
     android:orientation="vertical"
-    android:padding="14dp">
+    android:padding="12dp">
 
     <!-- Header -->
-    <TextView
-        android:layout_width="wrap_content"
+    <LinearLayout
+        android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:text="🏍️ OpenTripper Hunter 350"
-        android:textColor="#38BDF8"
-        android:textSize="20sp"
-        android:textStyle="bold" />
+        android:gravity="center_vertical"
+        android:orientation="horizontal">
 
-    <!-- Status -->
+        <TextView
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:text="🏍️ OpenTripper"
+            android:textColor="#38BDF8"
+            android:textSize="20sp"
+            android:textStyle="bold" />
+
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:background="#1E293B"
+            android:paddingStart="8dp"
+            android:paddingTop="3dp"
+            android:paddingEnd="8dp"
+            android:paddingBottom="3dp"
+            android:text="v0.3.1"
+            android:textColor="#94A3B8"
+            android:textSize="12sp"
+            android:textStyle="bold" />
+    </LinearLayout>
+
+    <!-- Status Bar -->
     <LinearLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:layout_marginTop="8dp"
         android:background="#151D2E"
-        android:padding="12dp"
+        android:padding="10dp"
         android:gravity="center_vertical"
         android:orientation="horizontal">
 
@@ -39,7 +60,7 @@
             android:layout_marginStart="10dp"
             android:text="Desconectado"
             android:textColor="#F1F5F9"
-            android:textSize="15sp"
+            android:textSize="14sp"
             android:textStyle="bold" />
 
         <Button
@@ -55,7 +76,7 @@
         android:layout_width="match_parent"
         android:layout_height="0dp"
         android:layout_weight="1"
-        android:layout_marginTop="8dp">
+        android:layout_marginTop="6dp">
 
         <LinearLayout
             android:layout_width="match_parent"
@@ -67,7 +88,7 @@
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:orientation="horizontal"
-                android:layout_marginTop="6dp">
+                android:layout_marginTop="4dp">
 
                 <EditText
                     android:id="@+id/pinInput"
@@ -88,14 +109,114 @@
                     android:text="Enviar PIN" />
             </LinearLayout>
 
-            <!-- Manobras -->
+            <!-- EXPLORADOR DE ÍCONES (FUZZING / DESCOBERTA) -->
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="10dp"
+                android:background="#151D2E"
+                android:orientation="vertical"
+                android:padding="10dp">
+
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="🔍 EXPLORADOR DE ÍCONES (ENGENHARIA REVERSA)"
+                    android:textColor="#38BDF8"
+                    android:textSize="11sp"
+                    android:textStyle="bold" />
+
+                <TextView
+                    android:id="@+id/tvCurrentIcon"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="6dp"
+                    android:background="#070A11"
+                    android:padding="8dp"
+                    android:text="Código: 0x00 (0) - Destino (Chegada)"
+                    android:textColor="#F1F5F9"
+                    android:textSize="13sp"
+                    android:textStyle="bold" />
+
+                <!-- Botões de navegação de ícone -->
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="8dp"
+                    android:orientation="horizontal">
+
+                    <Button
+                        android:id="@+id/btnPrevIcon"
+                        android:layout_width="0dp"
+                        android:layout_height="wrap_content"
+                        android:layout_weight="1"
+                        android:layout_marginEnd="4dp"
+                        android:text="◀ Anterior" />
+
+                    <Button
+                        android:id="@+id/btnNextIcon"
+                        android:layout_width="0dp"
+                        android:layout_height="wrap_content"
+                        android:layout_weight="1"
+                        android:layout_marginStart="4dp"
+                        android:backgroundTint="#0284C7"
+                        android:textColor="#FFFFFF"
+                        android:text="Próximo ▶" />
+                </LinearLayout>
+
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="4dp"
+                    android:orientation="horizontal">
+
+                    <Button
+                        android:id="@+id/btnPrev10"
+                        style="?android:attr/buttonStyleSmall"
+                        android:layout_width="0dp"
+                        android:layout_height="wrap_content"
+                        android:layout_weight="1"
+                        android:layout_marginEnd="2dp"
+                        android:text="-10" />
+
+                    <Button
+                        android:id="@+id/btnNext10"
+                        style="?android:attr/buttonStyleSmall"
+                        android:layout_width="0dp"
+                        android:layout_height="wrap_content"
+                        android:layout_weight="1"
+                        android:layout_marginStart="2dp"
+                        android:text="+10" />
+
+                    <Button
+                        android:id="@+id/btnJumpUntested"
+                        style="?android:attr/buttonStyleSmall"
+                        android:layout_width="0dp"
+                        android:layout_height="wrap_content"
+                        android:layout_weight="2"
+                        android:layout_marginStart="4dp"
+                        android:text="Pular p/ Ocultos" />
+                </LinearLayout>
+
+                <!-- Gravar descoberta -->
+                <Button
+                    android:id="@+id/btnRecordDiscovery"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="6dp"
+                    android:backgroundTint="#10B981"
+                    android:textColor="#FFFFFF"
+                    android:text="📝 Anotar O Que Apareceu no Visor" />
+            </LinearLayout>
+
+            <!-- Manobras Rápidas -->
             <TextView
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:layout_marginTop="12dp"
-                android:text="MANOBRAS DE NAVEGAÇÃO"
+                android:layout_marginTop="10dp"
+                android:text="MANOBRAS RÁPIDAS"
                 android:textColor="#94A3B8"
-                android:textSize="12sp"
+                android:textSize="11sp"
                 android:textStyle="bold" />
 
             <GridLayout
@@ -108,28 +229,28 @@
                     android:id="@+id/btnLeft"
                     android:layout_width="0dp"
                     android:layout_columnWeight="1"
-                    android:layout_margin="3dp"
+                    android:layout_margin="2dp"
                     android:text="⬅️ Esquerda" />
 
                 <Button
                     android:id="@+id/btnRight"
                     android:layout_width="0dp"
                     android:layout_columnWeight="1"
-                    android:layout_margin="3dp"
+                    android:layout_margin="2dp"
                     android:text="➡️ Direita" />
 
                 <Button
                     android:id="@+id/btnStraight"
                     android:layout_width="0dp"
                     android:layout_columnWeight="1"
-                    android:layout_margin="3dp"
+                    android:layout_margin="2dp"
                     android:text="⬆️ Reto" />
 
                 <Button
                     android:id="@+id/btnRound"
                     android:layout_width="0dp"
                     android:layout_columnWeight="1"
-                    android:layout_margin="3dp"
+                    android:layout_margin="2dp"
                     android:text="🔄 Rotatória" />
             </GridLayout>
 
@@ -137,7 +258,7 @@
             <LinearLayout
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:layout_marginTop="8dp"
+                android:layout_marginTop="6dp"
                 android:orientation="horizontal">
 
                 <Button
@@ -157,11 +278,11 @@
                     android:text="📞 Ligação" />
             </LinearLayout>
 
-            <!-- Logs -->
+            <!-- Logs Persistentes -->
             <LinearLayout
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:layout_marginTop="12dp"
+                android:layout_marginTop="10dp"
                 android:gravity="center_vertical"
                 android:orientation="horizontal">
 
@@ -169,9 +290,9 @@
                     android:layout_width="0dp"
                     android:layout_height="wrap_content"
                     android:layout_weight="1"
-                    android:text="REGISTRO DE COMUNICAÇÃO"
+                    android:text="LOGS (SALVOS NO DISCO)"
                     android:textColor="#94A3B8"
-                    android:textSize="12sp"
+                    android:textSize="11sp"
                     android:textStyle="bold" />
 
                 <Button
@@ -180,6 +301,20 @@
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:text="📋 Copiar" />
+
+                <Button
+                    android:id="@+id/btnShareLogs"
+                    style="?android:attr/buttonStyleSmall"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="📤 Enviar" />
+
+                <Button
+                    android:id="@+id/btnClearLogs"
+                    style="?android:attr/buttonStyleSmall"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="🗑️" />
             </LinearLayout>
 
             <TextView

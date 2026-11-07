@@ -33,20 +33,24 @@ jobs:
 
       - name: Renomear APK
         run: |
-          cp app/build/outputs/apk/debug/app-debug.apk opentripper-v0.3.0.apk
-          ls -la opentripper-v0.3.0.apk
+          cp app/build/outputs/apk/debug/app-debug.apk opentripper-v0.3.1.apk
+          ls -la opentripper-v0.3.1.apk
 
       - name: Upload Artifact
         uses: actions/upload-artifact@v4
         with:
           name: opentripper-apk
-          path: opentripper-v0.3.0.apk
+          path: opentripper-v0.3.1.apk
 
       - name: Criar Release no GitHub
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
-          gh release delete v0.3.0 --yes || true
-          gh release create v0.3.0 opentripper-v0.3.0.apk \
-            --title "OpenTripper v0.3.0 (APK Nativo)" \
-            --notes "Primeiro APK nativo do OpenTripper para Hunter 350. Inclui GATT Server local para canal de retorno exigido pelo Tripper Pod, keepalive contínuo de telas, ajuste de relógio e manobras."
+          gh release delete v0.3.1 --yes || true
+          gh release create v0.3.1 opentripper-v0.3.1.apk \
+            --title "OpenTripper v0.3.1 - Explorador de Ícones & Logs Persistentes" \
+            --notes "Novidades da versão v0.3.1:
+- 🧭 **Explorador / Fuzzer de Ícones:** Permite navegar e testar códigos de ícones de 0x00 a 0xFF no visor do Tripper Pod, com pulo rápido para faixas desconhecidas e botão de anotação de descobertas.
+- 💾 **Logs Persistentes no Disco:** O histórico de comunicação e eventos agora é gravado em arquivo local interno (opentripper_logs.txt), sobrevivendo ao fechar e reabrir o app.
+- 📤 **Compartilhamento e Limpeza de Logs:** Botões para enviar logs diretamente via WhatsApp/Email e limpar histórico.
+- 🛡️ **Watchdog Otimizado:** Mantém o painel acordado enviando continuamente a manobra selecionada no explorador."

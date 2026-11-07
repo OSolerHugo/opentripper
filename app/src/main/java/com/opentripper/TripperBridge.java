@@ -325,6 +325,13 @@ public class TripperBridge {
         enqueuePacket(pkt, "CALL OVERLAY");
     }
 
+    public void setExplorerIcon(int iconByte) {
+        byte[] pkt = TripperProtocol.buildNavPacket(iconByte, 100);
+        activeScreenPacket = pkt;
+        activeScreenDesc = String.format(java.util.Locale.US, "0x%02X - %s", iconByte & 0xFF, TripperProtocol.getIconName(iconByte));
+        enqueuePacket(pkt, "EXPLORER " + activeScreenDesc);
+    }
+
     private void startKeepalive() {
         stopKeepalive();
         keepaliveRunnable = new Runnable() {
