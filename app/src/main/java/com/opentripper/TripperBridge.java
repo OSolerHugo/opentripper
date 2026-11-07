@@ -91,6 +91,17 @@ public class TripperBridge {
         return state;
     }
 
+    public boolean isConnected() {
+        return state == State.CONNECTED && bluetoothGatt != null;
+    }
+
+    public void setActiveDisplayPacket(byte[] pkt) {
+        this.activeScreenPacket = pkt;
+        if (isConnected() && pkt != null) {
+            enqueuePacket(pkt, "DISPLAY_COORDINATOR");
+        }
+    }
+
     public boolean isPaired() {
         return prefs.getBoolean("paired", false);
     }

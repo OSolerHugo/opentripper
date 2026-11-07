@@ -112,7 +112,15 @@ Byte [18..19]: CRC-16
 | `0x03..0x08` | Variações de partida / Manobras preliminares | Não testado |
 | `0x09` | Seguir em frente (Seta reta para cima) | **Confirmado na Hunter 350** |
 | `0x0A` | Seguir em frente (Variação de pista) | Documentado |
-| `0x0B..0x13` | Faixa não catalogada | 🔍 **Alvo de Exploração** |
+| `0x0B` | Rotatória - 1ª Saída | **Confirmado na Hunter 350** |
+| `0x0C` | Rotatória - 2ª Saída | **Confirmado na Hunter 350** |
+| `0x0D` | Rotatória - 3ª Saída | **Confirmado na Hunter 350** |
+| `0x0E` | Rotatória - 4ª Saída | **Confirmado na Hunter 350** |
+| `0x0F` | Rotatória - 5ª Saída | **Confirmado na Hunter 350** |
+| `0x10` | Rotatória - 6ª Saída | **Confirmado na Hunter 350** |
+| `0x11` | Rotatória - 7ª Saída | **Confirmado na Hunter 350** |
+| `0x12` | Rotatória - 8ª Saída | **Confirmado na Hunter 350** |
+| `0x13` | Rotatória - 9ª Saída | **Confirmado na Hunter 350** |
 | `0x14` | Virar à esquerda (90°) | **Confirmado na Hunter 350** |
 | `0x15` | Virar à direita (90°) | **Confirmado na Hunter 350** |
 | `0x16` | Curva fechada à esquerda (Sharp Left) | Documentado |

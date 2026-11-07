@@ -33,28 +33,30 @@ jobs:
 
       - name: Renomear APK
         run: |
-          cp app/build/outputs/apk/debug/app-debug.apk opentripper-v0.3.1.apk
-          ls -la opentripper-v0.3.1.apk
+          cp app/build/outputs/apk/debug/app-debug.apk opentripper-v0.4.0.apk
+          ls -la opentripper-v0.4.0.apk
 
       - name: Upload Artifact
         uses: actions/upload-artifact@v4
         with:
           name: opentripper-apk
-          path: opentripper-v0.3.1.apk
+          path: opentripper-v0.4.0.apk
 
       - name: Criar Release no GitHub
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
-          gh release delete v0.3.1 --yes || true
+          gh release delete v0.4.0 --yes || true
           cat << 'EOF' > release_notes.md
-          ### Novidades do OpenTripper v0.3.1:
-          - 🧭 **Explorador / Fuzzer de Ícones:** Teste códigos de 0x00 a 0xFF diretamente no visor do Tripper Pod com botões de avanço, recuo e pulo para faixas ocultas.
-          - 💾 **Logs Persistentes em Disco:** Histórico completo de eventos salvo em opentripper_logs.txt, sem perder dados ao fechar o app.
-          - 📤 **Compartilhar e Limpar Logs:** Envio rápido de logs via WhatsApp/Email e limpeza de histórico.
-          - 📝 **Anotador de Descobertas:** Registre no log o que apareceu no painel em tempo real.
-          - 🛡️ **Watchdog Contínuo:** Mantém o painel ligado reenviando a manobra ativa a cada 1.5s.
+          ### Novidades do OpenTripper v0.4.0 (Modo Híbrido: Navegação & Velocímetro):
+          - 🏍️ **Modo Híbrido Inteligente:** Se o Waze ou Google Maps estiver navegando, projeta as curvas, rotatórias e distâncias. Se não houver rota, o visor vira um **Velocímetro Digital de alta precisão em tempo real**!
+          - 🔄 **Suporte Completo a Rotatórias (1ª a 9ª Saída):** Graças à descoberta na Hunter 350 (`0x0B..0x13`), qualquer rotatória no Maps/Waze exibe a saída correta no painel.
+          - 🔋 **Zero Desperdício de Bateria:** O chip GPS do celular só liga quando a moto conecta e desliga no milissegundo em que você desliga a ignição.
+          - 🪞 **Espelho em Tempo Real no App:** Veja na tela do celular exatamente o que está desenhado no painel da moto.
+          - ⚡ **Auto-Conectar ao Ligar a Moto:** Habilite o interruptor para subir na moto e rodar sem nem tirar o celular do bolso.
+          - 🧭 **Modo Bússola Alternativo:** Escolha entre Velocímetro ou Bússola 360° para o modo cruzeiro.
+          - 🛠️ **Área de Ferramentas Retrátil:** Explorador de ícones e logs guardados discretamente para deixar a tela principal limpa e bonita.
           EOF
-          gh release create v0.3.1 opentripper-v0.3.1.apk \
-            --title "OpenTripper v0.3.1 - Explorador de Ícones & Logs Persistentes" \
+          gh release create v0.4.0 opentripper-v0.4.0.apk \
+            --title "OpenTripper v0.4.0 - Modo Híbrido (Navegação & Velocímetro)" \
             --notes-file release_notes.md

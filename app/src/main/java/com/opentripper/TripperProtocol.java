@@ -119,6 +119,68 @@ public final class TripperProtocol {
         return withCrc(pkt);
     }
 
+    /**
+     * Pacote de Navegação Completo com suporte a ETA
+     */
+    public static byte[] buildNavFullPacket(int iconCode, int distanceVal, int distanceUnit, int etaHour, int etaMinute) {
+        byte[] pkt = new byte[18];
+        pkt[0] = 0x10;
+        pkt[1] = 0x11;
+        pkt[2] = (byte) iconCode;
+        pkt[3] = (byte) ((distanceVal >> 8) & 0xFF);
+        pkt[4] = (byte) (distanceVal & 0xFF);
+        pkt[5] = (byte) distanceUnit;
+        pkt[6] = 0x00; // dia
+        pkt[7] = (byte) 0xFF;
+        pkt[8] = (byte) 0xFF;
+        pkt[9] = (byte) 0xFF;
+        pkt[10] = 0x41;
+
+        if (etaHour >= 0 && etaHour <= 23 && etaMinute >= 0 && etaMinute <= 59) {
+            pkt[11] = (byte) etaHour;
+            pkt[12] = (byte) etaMinute;
+            pkt[13] = 0x00;
+        } else {
+            pkt[11] = (byte) 0xFF;
+            pkt[12] = (byte) 0xFF;
+            pkt[13] = (byte) 0xFF;
+        }
+
+        return withCrc(pkt);
+    }
+
+    /**
+     * Pacote do Modo Cruzeiro: Velocímetro Digital com hodômetro na linha inferior
+     */
+    public static byte[] buildSpeedometerPacket(int speedKmH, float tripDistanceKm) {
+        byte[] pkt = new byte[18];
+        pkt[0] = 0x10;
+        pkt[1] = 0x11;
+        pkt[2] = 0x09; // Seta para cima (direção de cruzeiro)
+        pkt[3] = (byte) ((speedKmH >> 8) & 0xFF);
+        pkt[4] = (byte) (speedKmH & 0xFF);
+        pkt[5] = 0x01; // Unidade inteira direta (ex: 45)
+        pkt[6] = 0x00; // Modo dia
+        pkt[7] = (byte) 0xFF;
+        pkt[8] = (byte) 0xFF;
+        pkt[9] = (byte) 0xFF;
+        pkt[10] = 0x41;
+
+        // Se houver distância percorrida na viagem, projeta na linha inferior
+        int tripTenths = Math.round(tripDistanceKm * 10.0f);
+        if (tripTenths > 0 && tripTenths < 9999) {
+            pkt[11] = (byte) ((tripTenths >> 8) & 0xFF);
+            pkt[12] = (byte) (tripTenths & 0xFF);
+            pkt[13] = 0x02; // km x 10
+        } else {
+            pkt[11] = (byte) 0xFF;
+            pkt[12] = (byte) 0xFF;
+            pkt[13] = (byte) 0xFF;
+        }
+
+        return withCrc(pkt);
+    }
+
     public static byte[] buildCallIconPacket() {
         byte[] pkt = new byte[18];
         pkt[0] = 0x40;
@@ -141,6 +203,15 @@ public final class TripperProtocol {
             case 0x08: return "Saída/Rampa à Esquerda";
             case 0x09: return "Seguir Reto";
             case 0x0A: return "Rotatória (Horário) Base";
+            case 0x0B: return "Rotatória (1ª Saída)";
+            case 0x0C: return "Rotatória (2ª Saída)";
+            case 0x0D: return "Rotatória (3ª Saída)";
+            case 0x0E: return "Rotatória (4ª Saída)";
+            case 0x0F: return "Rotatória (5ª Saída)";
+            case 0x10: return "Rotatória (6ª Saída)";
+            case 0x11: return "Rotatória (7ª Saída)";
+            case 0x12: return "Rotatória (8ª Saída)";
+            case 0x13: return "Rotatória (9ª Saída)";
             case 0x14: return "Virar à Esquerda";
             case 0x15: return "Virar à Direita";
             case 0x16: return "Curva Acentuada à Esquerda";
