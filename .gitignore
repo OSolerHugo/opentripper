@@ -1,0 +1,21 @@
+# Temporary files & folder
+tmp/
+*.tmp
+
+# Gradle and build artifacts
+.gradle/
+build/
+app/build/
+*.apk
+*.aab
+opentripper-*.apk
+
+# Android Studio & IDEs
+.idea/
+*.iml
+.vscode/
+
+# Local configuration
+local.properties
+.DS_Store
+Thumbs.db
