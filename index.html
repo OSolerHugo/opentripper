@@ -35,8 +35,8 @@
 
     header {
       text-align: center;
-      margin-bottom: 14px;
-      padding-top: 6px;
+      margin-bottom: 12px;
+      padding-top: 4px;
     }
 
     h1 {
@@ -50,6 +50,18 @@
       font-size: 0.8rem;
       color: var(--text-muted);
       margin-top: 2px;
+    }
+
+    /* Moto Key Alert */
+    .alert-banner {
+      background: rgba(245, 158, 11, 0.12);
+      border: 1px solid rgba(245, 158, 11, 0.4);
+      border-radius: 10px;
+      padding: 10px 12px;
+      font-size: 0.8rem;
+      color: #fde68a;
+      margin-bottom: 14px;
+      line-height: 1.35;
     }
 
     /* Status Bar */
@@ -147,10 +159,6 @@
       grid-template-columns: 1fr;
     }
 
-    .btn-grid.tri {
-      grid-template-columns: repeat(3, 1fr);
-    }
-
     .btn-grid.quad {
       grid-template-columns: repeat(4, 1fr);
     }
@@ -189,12 +197,6 @@
       background: #0369a1;
     }
 
-    button.btn-success {
-      background: rgba(16, 185, 129, 0.2);
-      border-color: rgba(16, 185, 129, 0.5);
-      color: #6ee7b7;
-    }
-
     button.btn-danger {
       background: rgba(239, 68, 68, 0.15);
       border-color: rgba(239, 68, 68, 0.4);
@@ -207,7 +209,6 @@
       transform: none !important;
     }
 
-    /* Small Pill Button */
     .btn-pill {
       min-height: 36px;
       padding: 6px 10px;
@@ -334,6 +335,11 @@
     <div class="subtitle">Hunter 350 - Controle & Diagnóstico</div>
   </header>
 
+  <!-- Dica da Chave -->
+  <div class="alert-banner">
+    ⚠️ <b>Regra da Moto:</b> Se desconectar, desligue a chave da moto por 3 segundos e ligue novamente antes de reconectar. O Pod só aceita conexões nos primeiros 30s da chave ligada!
+  </div>
+
   <!-- Status Bar -->
   <div class="status-card">
     <div class="status-info">
@@ -366,8 +372,8 @@
       </button>
 
       <button id="btnResume" disabled onclick="sendResume()">
-        <span>⚡ Reconectar</span>
-        <small style="font-size:0.7rem; color:var(--text-muted)">Já pareado antes</small>
+        <span>⚡ 2. Reconectar</span>
+        <small style="font-size:0.7rem; color:var(--text-muted)">Sem pedir PIN</small>
       </button>
     </div>
 
@@ -469,11 +475,9 @@
     let writeChar = null;
     let keepaliveInterval = null;
 
-    // Fila serial de escrita BLE (evita sobreposição)
     let writeQueue = [];
     let isWriting = false;
 
-    // Estado da tela ativa (para o keepalive inteligente reenviar a manobra sem o Pod cair)
     let activeScreenPacket = null;
     let activeScreenDesc = "PING_FW";
     let selectedDistance = 50;
@@ -489,7 +493,6 @@
           fullLogHistory = JSON.parse(saved);
           if (fullLogHistory.length > 0) {
             log(`--- Histórico anterior restaurado (${fullLogHistory.length} linhas) ---`, "sys", false);
-            // Mostra os últimos 20 no visor inicial
             fullLogHistory.slice(-20).forEach(item => {
               appendLogLine(item.time, item.msg, item.type);
             });
@@ -522,7 +525,6 @@
 
       if (save) {
         fullLogHistory.push({ time, msg, type });
-        // Mantém até 300 linhas gravadas
         if (fullLogHistory.length > 300) fullLogHistory.shift();
         try {
           localStorage.setItem(STORAGE_KEY, JSON.stringify(fullLogHistory));
@@ -542,14 +544,12 @@
       return fullLogHistory.map(l => `[${l.time}] ${l.msg}`).join("\n");
     }
 
-    // Copiar Logs para Área de Transferência
     async function copyLogs() {
       const text = getAllLogsText();
       try {
         await navigator.clipboard.writeText(text);
         showToast("✅ Logs copiados! Cole no chat.");
       } catch (err) {
-        // Fallback para seleção de texto
         const ta = document.createElement("textarea");
         ta.value = text;
         document.body.appendChild(ta);
@@ -560,7 +560,6 @@
       }
     }
 
-    // Compartilhar Nativo do Celular
     async function shareLogs() {
       const text = getAllLogsText();
       if (navigator.share) {
@@ -577,7 +576,6 @@
       }
     }
 
-    // Baixar Arquivo .txt
     function exportLogsFile() {
       const text = getAllLogsText();
       const blob = new Blob([text], { type: "text/plain;charset=utf-8" });
@@ -669,7 +667,7 @@
       }
     }
 
-    // --- BLE Conexão com Pausa de Estabilização (300ms) ---
+    // --- BLE Conexão Direta e Robusta ---
     async function connectBle() {
       try {
         if (!navigator.bluetooth) {
@@ -707,16 +705,21 @@
         log("Obtendo característica de escrita...", "info");
         writeChar = await service.getCharacteristic(CHAR_UUID);
 
-        // PAUSA CRUCIAL: 300ms de acomodação do rádio antes de qualquer transmissão
-        log("Aguardando 300ms para estabilização do firmware...", "info");
-        await new Promise(r => setTimeout(r, 300));
+        // Verifica se a conexão ainda está viva
+        if (!gattServer.connected) {
+          log("⚠️ Conexão caiu antes da inicialização.", "err");
+          onDisconnected();
+          return;
+        }
 
-        log("✅ Conexão estabelecida e pronta!", "tx");
+        log("✅ Conexão estabelecida com sucesso!", "tx");
         setConnectedUI(true);
 
+        // Envia imediatamente HANDSHAKE_RESUME (21 00...) para prender o Pod e não deixar cair
+        log("Enviando Handshake de Sessão...", "info");
+        sendResume();
+
         // Inicia o keepalive inteligente
-        activeScreenPacket = null;
-        activeScreenDesc = "PING_FW";
         startKeepalive();
 
       } catch (err) {
@@ -733,6 +736,8 @@
       gattServer = null;
       writeQueue = [];
       isWriting = false;
+      activeScreenPacket = null;
+      activeScreenDesc = "PING_FW";
     }
 
     async function disconnectBle() {
@@ -743,8 +748,12 @@
       onDisconnected();
     }
 
-    // --- Fila Serial de Envio (Sequencial sem atropelos) ---
+    // --- Fila Serial de Envio ---
     function enqueuePacket(uint8arr20, desc = "Packet") {
+      if (!gattServer || !gattServer.connected || !writeChar) {
+        log(`⚠️ Não enviado [${desc}]: Pod desconectado. Desligue e religue a chave da moto.`, "err");
+        return;
+      }
       writeQueue.push({ pkt: uint8arr20, desc });
       pumpQueue();
     }
@@ -764,15 +773,14 @@
       } catch (err) {
         log(`Erro de envio [${item.desc}]: ${err.message}`, "err");
       } finally {
-        // Pausa de 60ms entre pacotes para proteger o processador do Pod
         setTimeout(() => {
           isWriting = false;
           pumpQueue();
-        }, 60);
+        }, 50);
       }
     }
 
-    // --- Keepalive Inteligente (Reenvia tela ativa ou PING_FW a cada 1.5s) ---
+    // --- Keepalive Inteligente ---
     function startKeepalive() {
       stopKeepalive();
 
@@ -784,14 +792,11 @@
       keepaliveInterval = setInterval(() => {
         if (writeChar && gattServer && gattServer.connected) {
           if (activeScreenPacket) {
-            // Reenvia a própria manobra/tela para satisfazer o watchdog de tela do Pod!
             enqueuePacket(activeScreenPacket, `LOOP (${activeScreenDesc})`);
           } else {
-            // Reenvia o ping genérico
             enqueuePacket(pingPkt, "PING_FW");
           }
 
-          // Pulso visual no badge
           const dot = document.getElementById("hbDot");
           if (dot) {
             dot.style.opacity = "0.2";
@@ -799,7 +804,7 @@
           }
         }
       }, 1500);
-      log("Watchdog Keepalive iniciado (1.5s).", "info");
+      log("Keepalive ativo (1.5s).", "info");
     }
 
     function stopKeepalive() {
@@ -818,7 +823,7 @@
         0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x50, 0xA7
       ]);
       enqueuePacket(pkt, "SHOW PIN");
-      log("👉 Olhe para a moto: o PIN deve surgir no visor!", "sys");
+      log("👉 Comando de PIN enviado. Se for aparelho novo, o PIN aparece na tela.", "sys");
     }
 
     // 2. Handshake Resume
@@ -828,7 +833,6 @@
         0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x40, 0x45
       ]);
       enqueuePacket(pkt, "RESUME HANDSHAKE");
-      setTimeout(syncClock, 300);
     }
 
     // 3. Confirmar PIN
@@ -845,7 +849,7 @@
       }
       const pkt = withCrc(p18);
       enqueuePacket(pkt, "CONFIRM PIN (" + pin + ")");
-      setTimeout(syncClock, 400);
+      setTimeout(syncClock, 300);
     }
 
     // 4. Ajustar Relógio
@@ -859,7 +863,6 @@
       p18[2] = m & 0xFF;
       const pkt = withCrc(p18);
       enqueuePacket(pkt, `SET TIME ${h}:${m}`);
-      log(`Relógio sincronizado para ${h.toString().padStart(2, '0')}:${m.toString().padStart(2, '0')}`, "tx");
     }
 
     // 5. Configurar Distância
@@ -869,7 +872,6 @@
         const el = document.getElementById("dist" + d);
         if (el) el.classList.toggle("active", d === meters);
       });
-      // Se houver uma manobra ativa, atualiza imediatamente
       if (lastNavManeuver !== null) {
         setNavMode(lastNavManeuver, lastNavName);
       }
@@ -878,14 +880,14 @@
     let lastNavManeuver = null;
     let lastNavName = "";
 
-    // 6. Bússola Ativa (Mantém em loop contínuo)
+    // 6. Bússola Ativa
     function setCompassMode(directionByte, name) {
       lastNavManeuver = null;
       const p18 = new Uint8Array(18);
       p18[0] = 0x10;
       p18[1] = 0x11;
-      p18[2] = 0x41; // Tela bússola
-      p18[6] = 0x00; // Dia
+      p18[2] = 0x41;
+      p18[6] = 0x00;
       p18[7] = 0xFF;
       p18[11] = 0xFF;
       p18[12] = 0xFF;
@@ -899,7 +901,7 @@
       enqueuePacket(pkt, "COMPASS " + name);
     }
 
-    // 7. Navegação Ativa (Mantém a seta na tela em loop contínuo)
+    // 7. Navegação Ativa
     function setNavMode(maneuverIcon, name) {
       lastNavManeuver = maneuverIcon;
       lastNavName = name;
@@ -910,9 +912,9 @@
       p18[2] = maneuverIcon & 0xFF;
       p18[3] = (selectedDistance >> 8) & 0xFF;
       p18[4] = selectedDistance & 0xFF;
-      p18[5] = 0x01; // Metros
-      p18[6] = 0x00; // Dia
-      p18[7] = 0xFF; // Sem próxima manobra
+      p18[5] = 0x01;
+      p18[6] = 0x00;
+      p18[7] = 0xFF;
       p18[8] = 0xFF;
       p18[9] = 0xFF;
       p18[10] = 0x41;
