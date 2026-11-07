@@ -47,10 +47,14 @@ jobs:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
           gh release delete v0.3.1 --yes || true
+          cat << 'EOF' > release_notes.md
+          ### Novidades do OpenTripper v0.3.1:
+          - 🧭 **Explorador / Fuzzer de Ícones:** Teste códigos de 0x00 a 0xFF diretamente no visor do Tripper Pod com botões de avanço, recuo e pulo para faixas ocultas.
+          - 💾 **Logs Persistentes em Disco:** Histórico completo de eventos salvo em opentripper_logs.txt, sem perder dados ao fechar o app.
+          - 📤 **Compartilhar e Limpar Logs:** Envio rápido de logs via WhatsApp/Email e limpeza de histórico.
+          - 📝 **Anotador de Descobertas:** Registre no log o que apareceu no painel em tempo real.
+          - 🛡️ **Watchdog Contínuo:** Mantém o painel ligado reenviando a manobra ativa a cada 1.5s.
+          EOF
           gh release create v0.3.1 opentripper-v0.3.1.apk \
             --title "OpenTripper v0.3.1 - Explorador de Ícones & Logs Persistentes" \
-            --notes "Novidades da versão v0.3.1:
-- 🧭 **Explorador / Fuzzer de Ícones:** Permite navegar e testar códigos de ícones de 0x00 a 0xFF no visor do Tripper Pod, com pulo rápido para faixas desconhecidas e botão de anotação de descobertas.
-- 💾 **Logs Persistentes no Disco:** O histórico de comunicação e eventos agora é gravado em arquivo local interno (opentripper_logs.txt), sobrevivendo ao fechar e reabrir o app.
-- 📤 **Compartilhamento e Limpeza de Logs:** Botões para enviar logs diretamente via WhatsApp/Email e limpar histórico.
-- 🛡️ **Watchdog Otimizado:** Mantém o painel acordado enviando continuamente a manobra selecionada no explorador."
+            --notes-file release_notes.md
