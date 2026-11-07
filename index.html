@@ -331,7 +331,7 @@
 <body>
 
   <header>
-    <h1>🏍️ OpenTripper</h1>
+    <h1>🏍️ OpenTripper <span style="font-size: 0.65rem; background: rgba(56, 189, 248, 0.2); border: 1px solid var(--primary); padding: 2px 6px; border-radius: 6px; vertical-align: middle; font-weight: normal; color: var(--primary);">v0.2.1</span></h1>
     <div class="subtitle">Hunter 350 - Controle & Diagnóstico</div>
   </header>
 
@@ -487,6 +487,7 @@
     let fullLogHistory = [];
 
     window.addEventListener("DOMContentLoaded", () => {
+      log("OpenTripper Web v0.2.1 iniciado.", "sys", false);
       try {
         const saved = localStorage.getItem(STORAGE_KEY);
         if (saved) {
