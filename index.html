@@ -331,7 +331,7 @@
 <body>
 
   <header>
-    <h1>🏍️ OpenTripper <span style="font-size: 0.65rem; background: rgba(56, 189, 248, 0.2); border: 1px solid var(--primary); padding: 2px 6px; border-radius: 6px; vertical-align: middle; font-weight: normal; color: var(--primary);">v0.2.1</span></h1>
+    <h1>🏍️ OpenTripper <span style="font-size: 0.65rem; background: rgba(56, 189, 248, 0.2); border: 1px solid var(--primary); padding: 2px 6px; border-radius: 6px; vertical-align: middle; font-weight: normal; color: var(--primary);">v0.2.2</span></h1>
     <div class="subtitle">Hunter 350 - Controle & Diagnóstico</div>
   </header>
 
@@ -487,7 +487,7 @@
     let fullLogHistory = [];
 
     window.addEventListener("DOMContentLoaded", () => {
-      log("OpenTripper Web v0.2.1 iniciado.", "sys", false);
+      log("OpenTripper Web v0.2.2 iniciado.", "sys", false);
       try {
         const saved = localStorage.getItem(STORAGE_KEY);
         if (saved) {
@@ -716,11 +716,9 @@
         log("✅ Conexão estabelecida com sucesso!", "tx");
         setConnectedUI(true);
 
-        // Envia imediatamente HANDSHAKE_RESUME (21 00...) para prender o Pod e não deixar cair
-        log("Enviando Handshake de Sessão...", "info");
-        sendResume();
-
-        // Inicia o keepalive inteligente
+        // Inicia o keepalive inteligente (PING_FW a cada 1.5s)
+        activeScreenPacket = null;
+        activeScreenDesc = "PING_FW";
         startKeepalive();
 
       } catch (err) {
@@ -790,7 +788,7 @@
         0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x45, 0xD9
       ]);
 
-      keepaliveInterval = setInterval(() => {
+      const tick = () => {
         if (writeChar && gattServer && gattServer.connected) {
           if (activeScreenPacket) {
             enqueuePacket(activeScreenPacket, `LOOP (${activeScreenDesc})`);
@@ -804,7 +802,11 @@
             setTimeout(() => dot.style.opacity = "1", 200);
           }
         }
-      }, 1500);
+      };
+
+      // Dispara o primeiro sinal imediatamente e agenda o ciclo a cada 1.5s
+      tick();
+      keepaliveInterval = setInterval(tick, 1500);
       log("Keepalive ativo (1.5s).", "info");
     }
 
