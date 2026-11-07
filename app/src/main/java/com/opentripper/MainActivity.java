@@ -174,7 +174,7 @@ public class MainActivity extends Activity implements TripperBridge.Listener, Di
         btnToggleTools.setOnClickListener(v -> {
             if (llToolsSection.getVisibility() == View.VISIBLE) {
                 llToolsSection.setVisibility(View.GONE);
-                btnToggleTools.setText("🛠️ Ver Ferramentas de Teste, Explorador & Logs ▼");
+                btnToggleTools.setText("🛠️ Ver Ferramentas de Teste, Explorador e Logs ▼");
             } else {
                 llToolsSection.setVisibility(View.VISIBLE);
                 btnToggleTools.setText("🛠️ Recolher Ferramentas ▲");

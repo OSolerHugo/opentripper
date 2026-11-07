@@ -239,7 +239,7 @@
                 android:layout_height="wrap_content"
                 android:layout_marginTop="10dp"
                 android:backgroundTint="#1E293B"
-                android:text="🛠️ Ver Ferramentas de Teste, Explorador & Logs ▼"
+                android:text="🛠️ Ver Ferramentas de Teste, Explorador e Logs ▼"
                 android:textColor="#94A3B8" />
 
             <!-- SEÇÃO DE FERRAMENTAS (EXPANSÍVEL) -->
