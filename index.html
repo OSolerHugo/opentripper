@@ -35,8 +35,8 @@
 
     header {
       text-align: center;
-      margin-bottom: 16px;
-      padding-top: 8px;
+      margin-bottom: 14px;
+      padding-top: 6px;
     }
 
     h1 {
@@ -107,6 +107,7 @@
       display: flex;
       align-items: center;
       gap: 5px;
+      transition: all 0.2s;
     }
 
     .heartbeat-badge.active {
@@ -132,7 +133,7 @@
       margin-bottom: 12px;
       display: flex;
       align-items: center;
-      gap: 6px;
+      justify-content: space-between;
     }
 
     /* Grid & Buttons */
@@ -146,6 +147,10 @@
       grid-template-columns: 1fr;
     }
 
+    .btn-grid.tri {
+      grid-template-columns: repeat(3, 1fr);
+    }
+
     .btn-grid.quad {
       grid-template-columns: repeat(4, 1fr);
     }
@@ -155,8 +160,8 @@
       color: var(--text);
       border: 1px solid var(--card-border);
       border-radius: 10px;
-      padding: 14px 10px;
-      font-size: 0.9rem;
+      padding: 13px 8px;
+      font-size: 0.88rem;
       font-weight: 600;
       cursor: pointer;
       display: flex;
@@ -165,7 +170,7 @@
       justify-content: center;
       gap: 4px;
       transition: all 0.2s;
-      min-height: 52px;
+      min-height: 50px;
     }
 
     button:active {
@@ -184,6 +189,12 @@
       background: #0369a1;
     }
 
+    button.btn-success {
+      background: rgba(16, 185, 129, 0.2);
+      border-color: rgba(16, 185, 129, 0.5);
+      color: #6ee7b7;
+    }
+
     button.btn-danger {
       background: rgba(239, 68, 68, 0.15);
       border-color: rgba(239, 68, 68, 0.4);
@@ -191,9 +202,23 @@
     }
 
     button:disabled {
-      opacity: 0.4;
+      opacity: 0.35;
       cursor: not-allowed;
       transform: none !important;
+    }
+
+    /* Small Pill Button */
+    .btn-pill {
+      min-height: 36px;
+      padding: 6px 10px;
+      font-size: 0.8rem;
+      border-radius: 8px;
+    }
+
+    .btn-pill.active {
+      background: #0284c7;
+      border-color: #38bdf8;
+      color: #fff;
     }
 
     /* PIN Input Group */
@@ -227,7 +252,7 @@
       border: 1px solid var(--card-border);
       border-radius: 8px;
       padding: 10px;
-      height: 140px;
+      height: 160px;
       overflow-y: auto;
       font-family: monospace;
       font-size: 0.75rem;
@@ -245,22 +270,60 @@
     .log-entry.rx { color: #f472b6; }
     .log-entry.err { color: #f87171; }
     .log-entry.info { color: #94a3b8; }
+    .log-entry.sys { color: #fbbf24; }
 
     .log-header {
       display: flex;
       justify-content: space-between;
       align-items: center;
-      margin-bottom: 6px;
+      margin-bottom: 8px;
     }
 
-    .clear-btn {
-      background: none;
-      border: none;
-      color: var(--text-muted);
-      font-size: 0.7rem;
-      padding: 2px 6px;
+    .log-actions {
+      display: flex;
+      gap: 6px;
+    }
+
+    .action-pill {
+      background: #1e293b;
+      border: 1px solid var(--card-border);
+      color: var(--text);
+      font-size: 0.72rem;
+      padding: 4px 8px;
+      border-radius: 6px;
       cursor: pointer;
       min-height: unset;
+      display: inline-flex;
+      flex-direction: row;
+      gap: 3px;
+    }
+
+    .action-pill:active {
+      background: #38bdf8;
+      color: #000;
+    }
+
+    /* Toast Notification */
+    #toast {
+      position: fixed;
+      bottom: 16px;
+      left: 50%;
+      transform: translateX(-50%);
+      background: #0284c7;
+      color: #fff;
+      padding: 10px 20px;
+      border-radius: 20px;
+      font-size: 0.85rem;
+      font-weight: 600;
+      opacity: 0;
+      pointer-events: none;
+      transition: opacity 0.3s;
+      z-index: 1000;
+      box-shadow: 0 4px 12px rgba(0,0,0,0.5);
+    }
+
+    #toast.show {
+      opacity: 1;
     }
   </style>
 </head>
@@ -268,10 +331,10 @@
 
   <header>
     <h1>🏍️ OpenTripper</h1>
-    <div class="subtitle">Controle & Diagnóstico Hunter 350</div>
+    <div class="subtitle">Hunter 350 - Controle & Diagnóstico</div>
   </header>
 
-  <!-- Status Conexão -->
+  <!-- Status Bar -->
   <div class="status-card">
     <div class="status-info">
       <div id="statusDot" class="status-dot"></div>
@@ -281,13 +344,15 @@
       </div>
     </div>
     <div id="heartbeatBadge" class="heartbeat-badge">
-      <span>●</span> Keepalive
+      <span id="hbDot">●</span> <span id="hbText">Keepalive</span>
     </div>
   </div>
 
-  <!-- Etapa 1: Conexão & Handshake -->
+  <!-- Etapa 1: Conexão & Pareamento -->
   <div class="section-card">
-    <div class="section-title">1. Conexão & Pareamento</div>
+    <div class="section-title">
+      <span>1. Conexão & Pareamento</span>
+    </div>
     <div class="btn-grid full" style="margin-bottom: 10px;">
       <button id="btnConnect" class="btn-primary" onclick="connectBle()">
         <span>📡 Conectar ao Tripper Pod</span>
@@ -297,12 +362,12 @@
     <div class="btn-grid">
       <button id="btnShowPin" disabled onclick="sendShowPin()">
         <span>🔑 1. Pedir PIN</span>
-        <small style="font-size:0.7rem; color:var(--text-muted)">Mostra na tela</small>
+        <small style="font-size:0.7rem; color:var(--text-muted)">Gera número na moto</small>
       </button>
 
       <button id="btnResume" disabled onclick="sendResume()">
         <span>⚡ Reconectar</span>
-        <small style="font-size:0.7rem; color:var(--text-muted)">Sem pedir PIN</small>
+        <small style="font-size:0.7rem; color:var(--text-muted)">Já pareado antes</small>
       </button>
     </div>
 
@@ -314,7 +379,9 @@
 
   <!-- Etapa 2: Comandos Rápidos -->
   <div class="section-card">
-    <div class="section-title">2. Relógio Nativo</div>
+    <div class="section-title">
+      <span>2. Relógio Nativo</span>
+    </div>
     <div class="btn-grid full">
       <button id="btnSyncTime" disabled onclick="syncClock()">
         <span>🕒 Ajustar Horário Atual</span>
@@ -325,34 +392,45 @@
 
   <!-- Etapa 3: Laboratório de Telas -->
   <div class="section-card">
-    <div class="section-title">3. Teste de Telas & Manobras</div>
-
-    <div style="font-size:0.75rem; color:var(--text-muted); margin-bottom:8px;">Bússola (Direção):</div>
-    <div class="btn-grid quad" style="margin-bottom: 12px;">
-      <button id="btnN" disabled onclick="sendCompass(0x10)">Norte</button>
-      <button id="btnL" disabled onclick="sendCompass(0x20)">Leste</button>
-      <button id="btnS" disabled onclick="sendCompass(0x40)">Sul</button>
-      <button id="btnO" disabled onclick="sendCompass(0x30)">Oeste</button>
+    <div class="section-title">
+      <span>3. Laboratório de Telas & Manobras</span>
+      <span id="activeModeLabel" style="color:var(--primary); font-size:0.75rem;">Modo: Nenhum</span>
     </div>
 
-    <div style="font-size:0.75rem; color:var(--text-muted); margin-bottom:8px;">Manobras (Seta + 150m):</div>
+    <div style="font-size:0.75rem; color:var(--text-muted); margin-bottom:8px;">Bússola (Direção contínua):</div>
+    <div class="btn-grid quad" style="margin-bottom: 12px;">
+      <button id="btnN" disabled onclick="setCompassMode(0x10, 'Norte')">Norte</button>
+      <button id="btnL" disabled onclick="setCompassMode(0x20, 'Leste')">Leste</button>
+      <button id="btnS" disabled onclick="setCompassMode(0x40, 'Sul')">Sul</button>
+      <button id="btnO" disabled onclick="setCompassMode(0x30, 'Oeste')">Oeste</button>
+    </div>
+
+    <div style="font-size:0.75rem; color:var(--text-muted); margin-bottom:8px;">Escolha a distância a exibir:</div>
+    <div class="btn-grid quad" style="margin-bottom: 12px;">
+      <button id="dist50" class="btn-pill active" onclick="setDistance(50)">50 m</button>
+      <button id="dist100" class="btn-pill" onclick="setDistance(100)">100 m</button>
+      <button id="dist250" class="btn-pill" onclick="setDistance(250)">250 m</button>
+      <button id="dist500" class="btn-pill" onclick="setDistance(500)">500 m</button>
+    </div>
+
+    <div style="font-size:0.75rem; color:var(--text-muted); margin-bottom:8px;">Manobras (Reenvio contínuo ativo):</div>
     <div class="btn-grid">
-      <button id="btnNavLeft" disabled onclick="sendNav(0x14, 150)">
+      <button id="btnNavLeft" disabled onclick="setNavMode(0x14, 'Virar Esquerda')">
         <span>⬅️ Virar Esquerda</span>
       </button>
-      <button id="btnNavRight" disabled onclick="sendNav(0x15, 150)">
+      <button id="btnNavRight" disabled onclick="setNavMode(0x15, 'Virar Direita')">
         <span>➡️ Virar Direita</span>
       </button>
-      <button id="btnNavStraight" disabled onclick="sendNav(0x09, 300)">
+      <button id="btnNavStraight" disabled onclick="setNavMode(0x09, 'Seguir Reto')">
         <span>⬆️ Seguir Reto</span>
       </button>
-      <button id="btnNavRound" disabled onclick="sendNav(0x32, 200)">
+      <button id="btnNavRound" disabled onclick="setNavMode(0x32, 'Rotatória (1ª)')">
         <span>🔄 Rotatória (1ª)</span>
       </button>
     </div>
 
     <div class="btn-grid full" style="margin-top: 10px;">
-      <button id="btnCall" disabled onclick="sendCallOverlay()">
+      <button id="btnCall" disabled onclick="setCallMode()">
         <span>📞 Ícone de Ligação (Overlay)</span>
       </button>
     </div>
@@ -365,14 +443,21 @@
     </button>
   </div>
 
-  <!-- Console Log -->
+  <!-- Console Log com Botões de Exportação -->
   <div class="section-card" style="padding: 10px;">
     <div class="log-header">
-      <span class="section-title" style="margin-bottom: 0;">Registro de Comunicação</span>
-      <button class="clear-btn" onclick="clearLogs()">Limpar</button>
+      <span class="section-title" style="margin-bottom: 0;">Logs de Diagnóstico</span>
+      <div class="log-actions">
+        <button class="action-pill" onclick="copyLogs()">📋 Copiar</button>
+        <button class="action-pill" onclick="shareLogs()">📤 Enviar</button>
+        <button class="action-pill" onclick="exportLogsFile()">💾 Baixar</button>
+        <button class="action-pill" onclick="clearLogs()">🗑️</button>
+      </div>
     </div>
     <div id="logBox" class="log-box"></div>
   </div>
+
+  <div id="toast"></div>
 
   <script>
     // UUIDs oficiais do NXP Wireless UART / Tripper Pod
@@ -383,7 +468,130 @@
     let gattServer = null;
     let writeChar = null;
     let keepaliveInterval = null;
-    let lastPktSent = null;
+
+    // Fila serial de escrita BLE (evita sobreposição)
+    let writeQueue = [];
+    let isWriting = false;
+
+    // Estado da tela ativa (para o keepalive inteligente reenviar a manobra sem o Pod cair)
+    let activeScreenPacket = null;
+    let activeScreenDesc = "PING_FW";
+    let selectedDistance = 50;
+
+    // --- Persistência de Logs no LocalStorage ---
+    const STORAGE_KEY = "opentripper_logs_history";
+    let fullLogHistory = [];
+
+    window.addEventListener("DOMContentLoaded", () => {
+      try {
+        const saved = localStorage.getItem(STORAGE_KEY);
+        if (saved) {
+          fullLogHistory = JSON.parse(saved);
+          if (fullLogHistory.length > 0) {
+            log(`--- Histórico anterior restaurado (${fullLogHistory.length} linhas) ---`, "sys", false);
+            // Mostra os últimos 20 no visor inicial
+            fullLogHistory.slice(-20).forEach(item => {
+              appendLogLine(item.time, item.msg, item.type);
+            });
+          }
+        }
+      } catch (e) {
+        console.error("Erro ao carregar histórico", e);
+      }
+    });
+
+    function showToast(msg) {
+      const toast = document.getElementById("toast");
+      toast.innerText = msg;
+      toast.classList.add("show");
+      setTimeout(() => toast.classList.remove("show"), 2500);
+    }
+
+    function appendLogLine(time, msg, type) {
+      const box = document.getElementById("logBox");
+      const div = document.createElement("div");
+      div.className = "log-entry " + type;
+      div.innerText = `[${time}] ${msg}`;
+      box.appendChild(div);
+      box.scrollTop = box.scrollHeight;
+    }
+
+    function log(msg, type = "info", save = true) {
+      const time = new Date().toLocaleTimeString();
+      appendLogLine(time, msg, type);
+
+      if (save) {
+        fullLogHistory.push({ time, msg, type });
+        // Mantém até 300 linhas gravadas
+        if (fullLogHistory.length > 300) fullLogHistory.shift();
+        try {
+          localStorage.setItem(STORAGE_KEY, JSON.stringify(fullLogHistory));
+        } catch (e) {}
+      }
+    }
+
+    function clearLogs() {
+      document.getElementById("logBox").innerHTML = "";
+      fullLogHistory = [];
+      localStorage.removeItem(STORAGE_KEY);
+      log("Histórico de logs limpo.", "sys");
+    }
+
+    function getAllLogsText() {
+      if (fullLogHistory.length === 0) return "Nenhum log gravado.";
+      return fullLogHistory.map(l => `[${l.time}] ${l.msg}`).join("\n");
+    }
+
+    // Copiar Logs para Área de Transferência
+    async function copyLogs() {
+      const text = getAllLogsText();
+      try {
+        await navigator.clipboard.writeText(text);
+        showToast("✅ Logs copiados! Cole no chat.");
+      } catch (err) {
+        // Fallback para seleção de texto
+        const ta = document.createElement("textarea");
+        ta.value = text;
+        document.body.appendChild(ta);
+        ta.select();
+        document.execCommand("copy");
+        document.body.removeChild(ta);
+        showToast("✅ Logs copiados com sucesso!");
+      }
+    }
+
+    // Compartilhar Nativo do Celular
+    async function shareLogs() {
+      const text = getAllLogsText();
+      if (navigator.share) {
+        try {
+          await navigator.share({
+            title: "Logs OpenTripper Hunter 350",
+            text: text
+          });
+        } catch (err) {
+          console.log("Compartilhamento cancelado");
+        }
+      } else {
+        copyLogs();
+      }
+    }
+
+    // Baixar Arquivo .txt
+    function exportLogsFile() {
+      const text = getAllLogsText();
+      const blob = new Blob([text], { type: "text/plain;charset=utf-8" });
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement("a");
+      const d = new Date().toISOString().replace(/[:.]/g, "-").slice(0, 19);
+      a.href = url;
+      a.download = `opentripper_logs_${d}.txt`;
+      document.body.appendChild(a);
+      a.click();
+      document.body.removeChild(a);
+      URL.revokeObjectURL(url);
+      showToast("💾 Arquivo .txt baixado!");
+    }
 
     // --- CRC-16 / CCITT-FALSE ---
     function crc16(buf) {
@@ -413,21 +621,6 @@
 
     function toHex(uint8arr) {
       return Array.from(uint8arr).map(b => b.toString(16).padStart(2, '0').toUpperCase()).join(' ');
-    }
-
-    // --- Logs na tela ---
-    function log(msg, type = "info") {
-      const box = document.getElementById("logBox");
-      const time = new Date().toLocaleTimeString();
-      const div = document.createElement("div");
-      div.className = "log-entry " + type;
-      div.innerText = `[${time}] ${msg}`;
-      box.appendChild(div);
-      box.scrollTop = box.scrollHeight;
-    }
-
-    function clearLogs() {
-      document.getElementById("logBox").innerHTML = "";
     }
 
     // --- Controle de UI ---
@@ -468,6 +661,7 @@
         subText.innerText = "Pronto para escanear";
         document.getElementById("btnConnect").disabled = false;
         hb.classList.remove("active");
+        document.getElementById("activeModeLabel").innerText = "Modo: Nenhum";
         actionButtons.forEach(id => {
           const el = document.getElementById(id);
           if (el) el.disabled = true;
@@ -475,7 +669,7 @@
       }
     }
 
-    // --- BLE Conexão ---
+    // --- BLE Conexão com Pausa de Estabilização (300ms) ---
     async function connectBle() {
       try {
         if (!navigator.bluetooth) {
@@ -494,7 +688,7 @@
           ],
           optionalServices: [SERVICE_UUID]
         }).catch(async (e) => {
-          log("Filtro por nome falhou, buscando todos dispositivos...", "info");
+          log("Buscando lista completa de dispositivos...", "info");
           return await navigator.bluetooth.requestDevice({
             acceptAllDevices: true,
             optionalServices: [SERVICE_UUID]
@@ -513,10 +707,16 @@
         log("Obtendo característica de escrita...", "info");
         writeChar = await service.getCharacteristic(CHAR_UUID);
 
-        log("✅ Conexão estabelecida com sucesso!", "tx");
+        // PAUSA CRUCIAL: 300ms de acomodação do rádio antes de qualquer transmissão
+        log("Aguardando 300ms para estabilização do firmware...", "info");
+        await new Promise(r => setTimeout(r, 300));
+
+        log("✅ Conexão estabelecida e pronta!", "tx");
         setConnectedUI(true);
 
-        // Inicia o keepalive automático a cada 1.5s para evitar queda de watchdog
+        // Inicia o keepalive inteligente
+        activeScreenPacket = null;
+        activeScreenDesc = "PING_FW";
         startKeepalive();
 
       } catch (err) {
@@ -531,6 +731,8 @@
       setConnectedUI(false);
       writeChar = null;
       gattServer = null;
+      writeQueue = [];
+      isWriting = false;
     }
 
     async function disconnectBle() {
@@ -541,50 +743,59 @@
       onDisconnected();
     }
 
-    // --- Envio de Pacotes ---
-    async function sendPacket(uint8arr20, desc = "Packet") {
-      if (!writeChar) {
-        log("Erro: não conectado.", "err");
-        return false;
-      }
+    // --- Fila Serial de Envio (Sequencial sem atropelos) ---
+    function enqueuePacket(uint8arr20, desc = "Packet") {
+      writeQueue.push({ pkt: uint8arr20, desc });
+      pumpQueue();
+    }
+
+    async function pumpQueue() {
+      if (isWriting || writeQueue.length === 0 || !writeChar) return;
+      isWriting = true;
+      const item = writeQueue.shift();
+
       try {
         if (writeChar.writeValueWithoutResponse) {
-          await writeChar.writeValueWithoutResponse(uint8arr20);
+          await writeChar.writeValueWithoutResponse(item.pkt);
         } else {
-          await writeChar.writeValueWithResponse(uint8arr20);
+          await writeChar.writeValueWithResponse(item.pkt);
         }
-        lastPktSent = uint8arr20;
-        log(`TX [${desc}]: ${toHex(uint8arr20)}`, "tx");
-        return true;
+        log(`TX [${item.desc}]: ${toHex(item.pkt)}`, "tx");
       } catch (err) {
-        log(`Erro de envio [${desc}]: ${err.message}`, "err");
-        return false;
+        log(`Erro de envio [${item.desc}]: ${err.message}`, "err");
+      } finally {
+        // Pausa de 60ms entre pacotes para proteger o processador do Pod
+        setTimeout(() => {
+          isWriting = false;
+          pumpQueue();
+        }, 60);
       }
     }
 
-    // --- Keepalive (PING_FW) ---
+    // --- Keepalive Inteligente (Reenvia tela ativa ou PING_FW a cada 1.5s) ---
     function startKeepalive() {
       stopKeepalive();
-      // PING_FW = 03 00 ... 45 D9
+
       const pingPkt = new Uint8Array([
         0x03, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
         0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x45, 0xD9
       ]);
 
-      keepaliveInterval = setInterval(async () => {
+      keepaliveInterval = setInterval(() => {
         if (writeChar && gattServer && gattServer.connected) {
-          try {
-            if (writeChar.writeValueWithoutResponse) {
-              await writeChar.writeValueWithoutResponse(pingPkt);
-            } else {
-              await writeChar.writeValueWithResponse(pingPkt);
-            }
-            // Pulso visual no badge
-            const hb = document.getElementById("heartbeatBadge");
-            hb.style.opacity = "0.4";
-            setTimeout(() => hb.style.opacity = "1", 200);
-          } catch (e) {
-            log("Keepalive falhou: " + e.message, "err");
+          if (activeScreenPacket) {
+            // Reenvia a própria manobra/tela para satisfazer o watchdog de tela do Pod!
+            enqueuePacket(activeScreenPacket, `LOOP (${activeScreenDesc})`);
+          } else {
+            // Reenvia o ping genérico
+            enqueuePacket(pingPkt, "PING_FW");
+          }
+
+          // Pulso visual no badge
+          const dot = document.getElementById("hbDot");
+          if (dot) {
+            dot.style.opacity = "0.2";
+            setTimeout(() => dot.style.opacity = "1", 200);
           }
         }
       }, 1500);
@@ -600,28 +811,28 @@
 
     // --- Ações do Protocolo ---
 
-    // 1. Handshake Show PIN (21 01 ... 50 A7)
-    async function sendShowPin() {
+    // 1. Handshake Show PIN
+    function sendShowPin() {
       const pkt = new Uint8Array([
         0x21, 0x01, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
         0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x50, 0xA7
       ]);
-      await sendPacket(pkt, "SHOW PIN");
-      log("👉 Olhe para o Tripper Pod: o PIN de 6 dígitos deve aparecer!", "info");
+      enqueuePacket(pkt, "SHOW PIN");
+      log("👉 Olhe para a moto: o PIN deve surgir no visor!", "sys");
     }
 
-    // 2. Handshake Resume (21 00 ... 40 45)
-    async function sendResume() {
+    // 2. Handshake Resume
+    function sendResume() {
       const pkt = new Uint8Array([
         0x21, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
         0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x40, 0x45
       ]);
-      await sendPacket(pkt, "RESUME HANDSHAKE");
+      enqueuePacket(pkt, "RESUME HANDSHAKE");
       setTimeout(syncClock, 300);
     }
 
-    // 3. Confirmar PIN (0x20 + ASCII PIN)
-    async function confirmPin() {
+    // 3. Confirmar PIN
+    function confirmPin() {
       const pin = document.getElementById("pinInput").value.trim();
       if (!pin) {
         alert("Digite o PIN exibido no Tripper Pod");
@@ -633,12 +844,12 @@
         p18[1 + i] = pin.charCodeAt(i);
       }
       const pkt = withCrc(p18);
-      await sendPacket(pkt, "CONFIRM PIN (" + pin + ")");
+      enqueuePacket(pkt, "CONFIRM PIN (" + pin + ")");
       setTimeout(syncClock, 400);
     }
 
-    // 4. Ajustar Relógio (0x50 + hora + min)
-    async function syncClock() {
+    // 4. Ajustar Relógio
+    function syncClock() {
       const now = new Date();
       const h = now.getHours();
       const m = now.getMinutes();
@@ -647,12 +858,29 @@
       p18[1] = h & 0xFF;
       p18[2] = m & 0xFF;
       const pkt = withCrc(p18);
-      await sendPacket(pkt, `SET TIME ${h}:${m}`);
+      enqueuePacket(pkt, `SET TIME ${h}:${m}`);
       log(`Relógio sincronizado para ${h.toString().padStart(2, '0')}:${m.toString().padStart(2, '0')}`, "tx");
     }
 
-    // 5. Bússola
-    async function sendCompass(directionByte) {
+    // 5. Configurar Distância
+    function setDistance(meters) {
+      selectedDistance = meters;
+      [50, 100, 250, 500].forEach(d => {
+        const el = document.getElementById("dist" + d);
+        if (el) el.classList.toggle("active", d === meters);
+      });
+      // Se houver uma manobra ativa, atualiza imediatamente
+      if (lastNavManeuver !== null) {
+        setNavMode(lastNavManeuver, lastNavName);
+      }
+    }
+
+    let lastNavManeuver = null;
+    let lastNavName = "";
+
+    // 6. Bússola Ativa (Mantém em loop contínuo)
+    function setCompassMode(directionByte, name) {
+      lastNavManeuver = null;
       const p18 = new Uint8Array(18);
       p18[0] = 0x10;
       p18[1] = 0x11;
@@ -664,17 +892,24 @@
       p18[13] = 0xFF;
       p18[14] = directionByte;
       const pkt = withCrc(p18);
-      await sendPacket(pkt, "COMPASS DIR 0x" + directionByte.toString(16).toUpperCase());
+
+      activeScreenPacket = pkt;
+      activeScreenDesc = "Bússola " + name;
+      document.getElementById("activeModeLabel").innerText = "Modo: Bússola " + name;
+      enqueuePacket(pkt, "COMPASS " + name);
     }
 
-    // 6. Navegação
-    async function sendNav(maneuverIcon, distanceM) {
+    // 7. Navegação Ativa (Mantém a seta na tela em loop contínuo)
+    function setNavMode(maneuverIcon, name) {
+      lastNavManeuver = maneuverIcon;
+      lastNavName = name;
+
       const p18 = new Uint8Array(18);
       p18[0] = 0x10;
       p18[1] = 0x11;
       p18[2] = maneuverIcon & 0xFF;
-      p18[3] = (distanceM >> 8) & 0xFF;
-      p18[4] = distanceM & 0xFF;
+      p18[3] = (selectedDistance >> 8) & 0xFF;
+      p18[4] = selectedDistance & 0xFF;
       p18[5] = 0x01; // Metros
       p18[6] = 0x00; // Dia
       p18[7] = 0xFF; // Sem próxima manobra
@@ -685,16 +920,25 @@
       p18[12] = 0xFF;
       p18[13] = 0xFF;
       const pkt = withCrc(p18);
-      await sendPacket(pkt, `NAV ICON 0x${maneuverIcon.toString(16).toUpperCase()} (${distanceM}m)`);
+
+      activeScreenPacket = pkt;
+      activeScreenDesc = `${name} (${selectedDistance}m)`;
+      document.getElementById("activeModeLabel").innerText = `Modo: ${name} (${selectedDistance}m)`;
+      enqueuePacket(pkt, `NAV ${name} (${selectedDistance}m)`);
     }
 
-    // 7. Chamada Overlay (0x40 0x05)
-    async function sendCallOverlay() {
+    // 8. Chamada Overlay
+    function setCallMode() {
+      lastNavManeuver = null;
       const p18 = new Uint8Array(18);
       p18[0] = 0x40;
       p18[1] = 0x05;
       const pkt = withCrc(p18);
-      await sendPacket(pkt, "CALL OVERLAY");
+
+      activeScreenPacket = pkt;
+      activeScreenDesc = "Overlay Chamada";
+      document.getElementById("activeModeLabel").innerText = "Modo: Ícone Chamada";
+      enqueuePacket(pkt, "CALL OVERLAY");
     }
   </script>
 </body>
