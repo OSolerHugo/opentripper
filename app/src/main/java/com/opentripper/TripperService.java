@@ -51,7 +51,7 @@ public class TripperService extends Service implements TripperBridge.Listener {
 
         boolean autoConnect = prefs.getBoolean("auto_connect", false);
         if (autoConnect && !bridge.isConnected()) {
-            bridge.startScanAndConnect();
+            bridge.startConnect();
         }
 
         return START_STICKY;
@@ -102,7 +102,6 @@ public class TripperService extends Service implements TripperBridge.Listener {
     }
 
     @Override public void onLog(String message, String type) {}
-    @Override public void onPinRequested() {}
 
     private void createNotificationChannel() {
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {

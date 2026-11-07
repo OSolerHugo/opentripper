@@ -368,7 +368,7 @@ public class MainActivity extends Activity implements TripperBridge.Listener, Di
                 return;
             }
         }
-        bridge.startScanAndConnect();
+        bridge.startConnect();
     }
 
     @Override
@@ -418,10 +418,5 @@ public class MainActivity extends Activity implements TripperBridge.Listener, Di
 
     private void log(String msg, String type) {
         onLog(msg, type);
-    }
-
-    @Override
-    public void onPinRequested() {
-        Toast.makeText(this, "PIN solicitado no visor da moto", Toast.LENGTH_SHORT).show();
     }
 }
