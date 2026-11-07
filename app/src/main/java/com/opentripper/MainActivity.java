@@ -21,6 +21,7 @@ import android.widget.EditText;
 import android.widget.LinearLayout;
 import android.widget.RadioButton;
 import android.widget.RadioGroup;
+import android.widget.ScrollView;
 import android.widget.TextView;
 import android.widget.Toast;
 
@@ -37,6 +38,13 @@ public class MainActivity extends Activity implements TripperBridge.Listener, Di
 
     private static final String LOG_FILE_NAME = "opentripper_logs.txt";
 
+    // Cores da Identidade Visual
+    private static final int COLOR_CYAN = Color.parseColor("#00C2D9");
+    private static final int COLOR_MUTED = Color.parseColor("#8B9BB4");
+    private static final int COLOR_GREEN = Color.parseColor("#22C785");
+    private static final int COLOR_RED = Color.parseColor("#E05252");
+    private static final int COLOR_AMBER = Color.parseColor("#F5A623");
+
     private TripperBridge bridge;
     private DisplayCoordinator coordinator;
     private SharedPreferences prefs;
@@ -44,27 +52,49 @@ public class MainActivity extends Activity implements TripperBridge.Listener, Di
     // Barra de Status Superior
     private View statusDot;
     private TextView statusText;
-    private Button btnConnect;
 
-    // Espelho do Visor da Moto
-    private TextView tvMirrorMode;
+    // 4 Abas Principais (Containers)
+    private ScrollView tabDashboard;
+    private ScrollView tabNavigation;
+    private ScrollView tabCruise;
+    private ScrollView tabDevice;
+
+    // Botões de Navegação Inferior
+    private Button btnTabDashboard;
+    private Button btnTabNavigation;
+    private Button btnTabCruise;
+    private Button btnTabDevice;
+
+    // Componentes - Tab 1: Dashboard
+    private TextView tvMirrorClock;
     private TextView tvMirrorIcon;
     private TextView tvMirrorPrimary;
     private TextView tvMirrorBottom;
+    private TextView tvMirrorMode;
+    private TextView tvDashSpeed;
+    private TextView tvDashTrip;
 
-    // Configurações de Pilotagem
-    private CheckBox cbAutoConnect;
-    private RadioGroup rgCruiseMode;
-    private RadioButton rbSpeedometer;
-    private RadioButton rbCompass;
+    // Componentes - Tab 2: Navegação
     private LinearLayout llNotificationWarning;
     private TextView tvNotificationStatus;
     private Button btnEnableNotifications;
+    private TextView tvNavManeuverTitle;
+    private TextView tvNavDistance;
+    private TextView tvNavEta;
 
-    // Ferramentas & Engenharia (Seção Retrátil)
-    private Button btnToggleTools;
-    private LinearLayout llToolsSection;
-    private Button btnSyncClock, btnCall;
+    // Componentes - Tab 3: Cruzeiro
+    private TextView tvCruiseSpeedLarge;
+    private TextView tvCruiseBearing;
+    private TextView tvCruiseTrip;
+    private RadioGroup rgCruiseMode;
+    private RadioButton rbSpeedometer;
+    private RadioButton rbCompass;
+
+    // Componentes - Tab 4: Dispositivo
+    private Button btnConnect;
+    private CheckBox cbAutoConnect;
+    private Button btnSyncClock;
+    private Button btnCall;
 
     // Explorador de Ícones
     private TextView tvCurrentIcon;
@@ -79,6 +109,7 @@ public class MainActivity extends Activity implements TripperBridge.Listener, Di
 
     private final StringBuilder logBuffer = new StringBuilder();
     private final SimpleDateFormat timeFormat = new SimpleDateFormat("HH:mm:ss", Locale.getDefault());
+    private final SimpleDateFormat clockFormat = new SimpleDateFormat("HH:mm", Locale.getDefault());
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -87,33 +118,58 @@ public class MainActivity extends Activity implements TripperBridge.Listener, Di
 
         prefs = getSharedPreferences("opentripper_prefs", Context.MODE_PRIVATE);
 
-        // 1. Inicializa views
+        // 1. Inicializa Top Bar
         statusDot = findViewById(R.id.statusDot);
         statusText = findViewById(R.id.statusText);
-        btnConnect = findViewById(R.id.btnConnect);
 
-        // Espelho
-        tvMirrorMode = findViewById(R.id.tvMirrorMode);
+        // 2. Inicializa Abas e Bottom Bar
+        tabDashboard = findViewById(R.id.tabDashboard);
+        tabNavigation = findViewById(R.id.tabNavigation);
+        tabCruise = findViewById(R.id.tabCruise);
+        tabDevice = findViewById(R.id.tabDevice);
+
+        btnTabDashboard = findViewById(R.id.btnTabDashboard);
+        btnTabNavigation = findViewById(R.id.btnTabNavigation);
+        btnTabCruise = findViewById(R.id.btnTabCruise);
+        btnTabDevice = findViewById(R.id.btnTabDevice);
+
+        setupBottomNavigation();
+
+        // 3. Inicializa Tab 1 (Dashboard)
+        tvMirrorClock = findViewById(R.id.tvMirrorClock);
         tvMirrorIcon = findViewById(R.id.tvMirrorIcon);
         tvMirrorPrimary = findViewById(R.id.tvMirrorPrimary);
         tvMirrorBottom = findViewById(R.id.tvMirrorBottom);
+        tvMirrorMode = findViewById(R.id.tvMirrorMode);
+        tvDashSpeed = findViewById(R.id.tvDashSpeed);
+        tvDashTrip = findViewById(R.id.tvDashTrip);
 
-        // Configurações
-        cbAutoConnect = findViewById(R.id.cbAutoConnect);
-        rgCruiseMode = findViewById(R.id.rgCruiseMode);
-        rbSpeedometer = findViewById(R.id.rbSpeedometer);
-        rbCompass = findViewById(R.id.rbCompass);
+        // 4. Inicializa Tab 2 (Navegação)
         llNotificationWarning = findViewById(R.id.llNotificationWarning);
         tvNotificationStatus = findViewById(R.id.tvNotificationStatus);
         btnEnableNotifications = findViewById(R.id.btnEnableNotifications);
+        tvNavManeuverTitle = findViewById(R.id.tvNavManeuverTitle);
+        tvNavDistance = findViewById(R.id.tvNavDistance);
+        tvNavEta = findViewById(R.id.tvNavEta);
 
-        // Ferramentas & Retrátil
-        btnToggleTools = findViewById(R.id.btnToggleTools);
-        llToolsSection = findViewById(R.id.llToolsSection);
+        btnEnableNotifications.setOnClickListener(v -> {
+            startActivity(new Intent(Settings.ACTION_NOTIFICATION_LISTENER_SETTINGS));
+        });
+
+        // 5. Inicializa Tab 3 (Cruzeiro)
+        tvCruiseSpeedLarge = findViewById(R.id.tvCruiseSpeedLarge);
+        tvCruiseBearing = findViewById(R.id.tvCruiseBearing);
+        tvCruiseTrip = findViewById(R.id.tvCruiseTrip);
+        rgCruiseMode = findViewById(R.id.rgCruiseMode);
+        rbSpeedometer = findViewById(R.id.rbSpeedometer);
+        rbCompass = findViewById(R.id.rbCompass);
+
+        // 6. Inicializa Tab 4 (Dispositivo)
+        btnConnect = findViewById(R.id.btnConnect);
+        cbAutoConnect = findViewById(R.id.cbAutoConnect);
         btnSyncClock = findViewById(R.id.btnSyncClock);
         btnCall = findViewById(R.id.btnCall);
 
-        // Explorador
         tvCurrentIcon = findViewById(R.id.tvCurrentIcon);
         btnPrevIcon = findViewById(R.id.btnPrevIcon);
         btnNextIcon = findViewById(R.id.btnNextIcon);
@@ -122,22 +178,20 @@ public class MainActivity extends Activity implements TripperBridge.Listener, Di
         btnJumpUntested = findViewById(R.id.btnJumpUntested);
         btnRecordDiscovery = findViewById(R.id.btnRecordDiscovery);
 
-        // Logs
         btnCopyLogs = findViewById(R.id.btnCopyLogs);
         btnShareLogs = findViewById(R.id.btnShareLogs);
         btnClearLogs = findViewById(R.id.btnClearLogs);
         logView = findViewById(R.id.logView);
         logView.setMovementMethod(new ScrollingMovementMethod());
 
-        // 2. Carrega logs do disco
+        // 7. Carrega logs do disco
         loadLogsFromDisk();
 
-        // 3. Inicializa Bridge BLE e Coordenador Híbrido
+        // 8. Inicializa Bluetooth e Coordenador
         bridge = new TripperBridge(this, this);
         coordinator = new DisplayCoordinator(this, bridge);
         coordinator.setMirrorListener(this);
 
-        // 4. Configura Listeners de UI
         btnConnect.setOnClickListener(v -> {
             if (bridge.isConnected()) {
                 bridge.disconnect();
@@ -165,23 +219,6 @@ public class MainActivity extends Activity implements TripperBridge.Listener, Di
             }
         });
 
-        // Verificação de Acesso às Notificações
-        btnEnableNotifications.setOnClickListener(v -> {
-            startActivity(new Intent(Settings.ACTION_NOTIFICATION_LISTENER_SETTINGS));
-        });
-
-        // Retrátil de Ferramentas
-        btnToggleTools.setOnClickListener(v -> {
-            if (llToolsSection.getVisibility() == View.VISIBLE) {
-                llToolsSection.setVisibility(View.GONE);
-                btnToggleTools.setText("🛠️ Ver Ferramentas de Teste, Explorador e Logs ▼");
-            } else {
-                llToolsSection.setVisibility(View.VISIBLE);
-                btnToggleTools.setText("🛠️ Recolher Ferramentas ▲");
-            }
-        });
-
-        // Ações de Ferramentas
         btnSyncClock.setOnClickListener(v -> {
             bridge.syncTime();
             log("Relógio sincronizado para hora atual", "tx");
@@ -193,16 +230,33 @@ public class MainActivity extends Activity implements TripperBridge.Listener, Di
             log("Overlay de chamada enviado", "tx");
         });
 
-        // Configuração do Explorador
         setupExplorerControls();
-
-        // Configuração de Logs
         setupLogControls();
 
         // Se auto-conectar estiver ativo, inicia a busca
         if (autoConnectSaved) {
             checkPermissionsAndConnect();
         }
+    }
+
+    private void setupBottomNavigation() {
+        btnTabDashboard.setOnClickListener(v -> selectTab(0));
+        btnTabNavigation.setOnClickListener(v -> selectTab(1));
+        btnTabCruise.setOnClickListener(v -> selectTab(2));
+        btnTabDevice.setOnClickListener(v -> selectTab(3));
+        selectTab(0);
+    }
+
+    private void selectTab(int index) {
+        tabDashboard.setVisibility(index == 0 ? View.VISIBLE : View.GONE);
+        tabNavigation.setVisibility(index == 1 ? View.VISIBLE : View.GONE);
+        tabCruise.setVisibility(index == 2 ? View.VISIBLE : View.GONE);
+        tabDevice.setVisibility(index == 3 ? View.VISIBLE : View.GONE);
+
+        btnTabDashboard.setTextColor(index == 0 ? COLOR_CYAN : COLOR_MUTED);
+        btnTabNavigation.setTextColor(index == 1 ? COLOR_CYAN : COLOR_MUTED);
+        btnTabCruise.setTextColor(index == 2 ? COLOR_CYAN : COLOR_MUTED);
+        btnTabDevice.setTextColor(index == 3 ? COLOR_CYAN : COLOR_MUTED);
     }
 
     @Override
@@ -214,25 +268,54 @@ public class MainActivity extends Activity implements TripperBridge.Listener, Di
     private void checkNotificationPermissionStatus() {
         boolean granted = TurnByTurnService.isNotificationAccessGranted(this);
         if (granted) {
-            llNotificationWarning.setBackgroundColor(Color.parseColor("#064E3B")); // Verde escuro discreto
-            tvNotificationStatus.setText("✅ Leitor de Google Maps e Waze ativo e pronto");
-            tvNotificationStatus.setTextColor(Color.parseColor("#A7F3D0"));
-            btnEnableNotifications.setVisibility(View.GONE);
+            llNotificationWarning.setVisibility(View.GONE);
         } else {
-            llNotificationWarning.setBackgroundColor(Color.parseColor("#1E1B4B")); // Azul arroxeado alerta
-            tvNotificationStatus.setText("⚠️ Para ler Google Maps e Waze, autorize o OpenTripper:");
-            tvNotificationStatus.setTextColor(Color.parseColor("#E0E7FF"));
+            llNotificationWarning.setVisibility(View.VISIBLE);
+            tvNotificationStatus.setText("⚠️ Para ler o Google Maps e Waze, autorize o acesso:");
+            tvNotificationStatus.setTextColor(COLOR_AMBER);
             btnEnableNotifications.setVisibility(View.VISIBLE);
         }
     }
 
-    // Callbacks do Espelho do Visor
     @Override
     public void onDisplayMirrorUpdated(String mode, int iconCode, String primaryText, String bottomText) {
-        tvMirrorMode.setText("Modo: " + mode);
+        String currentTime = clockFormat.format(new Date());
+        tvMirrorClock.setText(currentTime);
+        tvMirrorMode.setText("MODO: " + mode.toUpperCase(Locale.ROOT));
         tvMirrorIcon.setText(TripperProtocol.getIconName(iconCode));
         tvMirrorPrimary.setText(primaryText);
-        tvMirrorBottom.setText(bottomText);
+        tvMirrorBottom.setText(bottomText.toUpperCase(Locale.ROOT));
+
+        // Atualiza cards da Tab 1 (Dashboard)
+        if (primaryText.contains("km/h")) {
+            tvDashSpeed.setText(primaryText);
+        }
+        if (bottomText.toLowerCase().contains("viagem") || bottomText.toLowerCase().contains("sessão")) {
+            tvDashTrip.setText(bottomText.replace("Viagem: ", "").replace("Sessão: ", ""));
+        }
+
+        // Atualiza Tab 2 (Navegação)
+        TurnByTurnService.NavStep step = TurnByTurnService.getLastActiveStep();
+        if (step != null) {
+            tvNavManeuverTitle.setText(step.rawTitle.isEmpty() ? TripperProtocol.getIconName(step.iconCode) : step.rawTitle);
+            tvNavDistance.setText(primaryText);
+            if (step.etaHour != 0xFF) {
+                tvNavEta.setText(String.format("Chegada estimada: %02d:%02d", step.etaHour, step.etaMinute));
+            } else {
+                tvNavEta.setText("Rota ativa em andamento");
+            }
+        } else {
+            tvNavManeuverTitle.setText("Nenhuma rota ativa no momento");
+            tvNavDistance.setText("-- m");
+            tvNavEta.setText("Aguardando navegação do Waze / Maps");
+        }
+
+        // Atualiza Tab 3 (Cruzeiro)
+        if (primaryText.contains("km/h")) {
+            String speedNum = primaryText.replace(" km/h", "").trim();
+            tvCruiseSpeedLarge.setText(speedNum);
+        }
+        tvCruiseTrip.setText(tvDashTrip.getText().toString());
     }
 
     private void setupExplorerControls() {
@@ -375,28 +458,28 @@ public class MainActivity extends Activity implements TripperBridge.Listener, Di
     public void onStateChanged(TripperBridge.State state) {
         switch (state) {
             case DISCONNECTED:
-                statusDot.setBackgroundColor(Color.parseColor("#EF4444"));
-                statusText.setText("Desconectado");
-                btnConnect.setText("Conectar");
+                statusDot.setBackgroundColor(COLOR_RED);
+                statusText.setText("DESCONECTADO");
+                btnConnect.setText("Conectar ao Tripper Pod");
                 btnConnect.setEnabled(true);
                 if (coordinator != null) coordinator.onDisconnected();
                 break;
             case SCANNING:
-                statusDot.setBackgroundColor(Color.parseColor("#F59E0B"));
-                statusText.setText("Buscando Tripper Pod...");
-                btnConnect.setText("Buscando...");
+                statusDot.setBackgroundColor(COLOR_AMBER);
+                statusText.setText("BUSCANDO (RE_DISP)...");
+                btnConnect.setText("Buscando Pod...");
                 btnConnect.setEnabled(false);
                 break;
             case CONNECTING:
-                statusDot.setBackgroundColor(Color.parseColor("#3B82F6"));
-                statusText.setText("Conectando...");
+                statusDot.setBackgroundColor(COLOR_CYAN);
+                statusText.setText("CONECTANDO...");
                 btnConnect.setText("Conectando...");
                 btnConnect.setEnabled(false);
                 break;
             case CONNECTED:
-                statusDot.setBackgroundColor(Color.parseColor("#10B981"));
-                statusText.setText("Conectado (RE_DISP)");
-                btnConnect.setText("Desconectar");
+                statusDot.setBackgroundColor(COLOR_GREEN);
+                statusText.setText("CONECTADO (RE_DISP)");
+                btnConnect.setText("Desconectar Pod");
                 btnConnect.setEnabled(true);
                 if (coordinator != null) coordinator.onConnected();
                 break;

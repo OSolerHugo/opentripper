@@ -1,0 +1,14 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <color name="bg_graphite">#0A0E17</color>
+    <color name="surface_card">#141C28</color>
+    <color name="surface_border">#232F42</color>
+    <color name="surface_elevated">#1C2638</color>
+    <color name="text_primary">#E8EDF3</color>
+    <color name="text_secondary">#8B9BB4</color>
+    <color name="text_muted">#50607A</color>
+    <color name="cyan_accent">#00C2D9</color>
+    <color name="green_telemetry">#22C785</color>
+    <color name="amber_warning">#F5A623</color>
+    <color name="red_status">#E05252</color>
+</resources>

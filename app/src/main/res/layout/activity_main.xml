@@ -2,14 +2,18 @@
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:background="#0B0F19"
-    android:orientation="vertical"
-    android:padding="12dp">
+    android:background="#0A0E17"
+    android:orientation="vertical">
 
-    <!-- Header -->
+    <!-- Top Telemetry Header -->
     <LinearLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
+        android:background="#141C28"
+        android:paddingStart="16dp"
+        android:paddingTop="12dp"
+        android:paddingEnd="16dp"
+        android:paddingBottom="12dp"
         android:gravity="center_vertical"
         android:orientation="horizontal">
 
@@ -17,207 +21,238 @@
             android:layout_width="0dp"
             android:layout_height="wrap_content"
             android:layout_weight="1"
-            android:text="🏍️ OpenTripper"
-            android:textColor="#38BDF8"
-            android:textSize="20sp"
-            android:textStyle="bold" />
-
-        <TextView
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:background="#1E293B"
-            android:paddingStart="8dp"
-            android:paddingTop="3dp"
-            android:paddingEnd="8dp"
-            android:paddingBottom="3dp"
-            android:text="v0.4.0"
-            android:textColor="#94A3B8"
-            android:textSize="12sp"
-            android:textStyle="bold" />
-    </LinearLayout>
-
-    <!-- Barra de Conexão com a Moto -->
-    <LinearLayout
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:layout_marginTop="8dp"
-        android:background="#151D2E"
-        android:padding="10dp"
-        android:gravity="center_vertical"
-        android:orientation="horizontal">
-
-        <View
-            android:id="@+id/statusDot"
-            android:layout_width="14dp"
-            android:layout_height="14dp"
-            android:background="#EF4444" />
-
-        <TextView
-            android:id="@+id/statusText"
-            android:layout_width="0dp"
-            android:layout_height="wrap_content"
-            android:layout_weight="1"
-            android:layout_marginStart="10dp"
-            android:text="Desconectado"
-            android:textColor="#F1F5F9"
-            android:textSize="14sp"
-            android:textStyle="bold" />
-
-        <Button
-            android:id="@+id/btnConnect"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:backgroundTint="#0284C7"
-            android:textColor="#FFFFFF"
-            android:text="Conectar" />
-    </LinearLayout>
-
-    <ScrollView
-        android:layout_width="match_parent"
-        android:layout_height="0dp"
-        android:layout_weight="1"
-        android:layout_marginTop="6dp">
+            android:text="OPENTRIPPER"
+            android:textColor="#E8EDF3"
+            android:textSize="18sp"
+            android:textStyle="bold"
+            android:letterSpacing="0.08" />
 
         <LinearLayout
-            android:layout_width="match_parent"
+            android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:orientation="vertical">
+            android:background="@drawable/bg_pill"
+            android:gravity="center_vertical"
+            android:paddingStart="10dp"
+            android:paddingTop="4dp"
+            android:paddingEnd="10dp"
+            android:paddingBottom="4dp"
+            android:orientation="horizontal">
 
-            <!-- ESPELHO DO VISOR DA MOTO EM TEMPO REAL -->
+            <View
+                android:id="@+id/statusDot"
+                android:layout_width="8dp"
+                android:layout_height="8dp"
+                android:background="#E05252" />
+
+            <TextView
+                android:id="@+id/statusText"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginStart="6dp"
+                android:text="DESCONECTADO"
+                android:textColor="#8B9BB4"
+                android:textSize="10sp"
+                android:textStyle="bold" />
+        </LinearLayout>
+    </LinearLayout>
+
+    <View
+        android:layout_width="match_parent"
+        android:layout_height="1dp"
+        android:background="#232F42" />
+
+    <!-- Main Content Frame (Tabs) -->
+    <FrameLayout
+        android:layout_width="match_parent"
+        android:layout_height="0dp"
+        android:layout_weight="1">
+
+        <!-- ==================== TAB 1: DASHBOARD ==================== -->
+        <ScrollView
+            android:id="@+id/tabDashboard"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:padding="16dp">
+
             <LinearLayout
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:layout_marginTop="8dp"
-                android:background="#151D2E"
-                android:gravity="center_horizontal"
-                android:orientation="vertical"
-                android:padding="16dp">
+                android:orientation="vertical">
+
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="TELEMETRIA DO DISPLAY"
+                    android:textColor="#8B9BB4"
+                    android:textSize="11sp"
+                    android:textStyle="bold"
+                    android:letterSpacing="0.05" />
+
+                <!-- Mostrador Circular (Simulador Tripper Pod) -->
+                <LinearLayout
+                    android:layout_width="260dp"
+                    android:layout_height="260dp"
+                    android:layout_gravity="center_horizontal"
+                    android:layout_marginTop="16dp"
+                    android:background="@drawable/bg_gauge_ring"
+                    android:gravity="center"
+                    android:orientation="vertical"
+                    android:padding="20dp">
+
+                    <TextView
+                        android:id="@+id/tvMirrorClock"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="--:--"
+                        android:textColor="#8B9BB4"
+                        android:textSize="12sp"
+                        android:fontFamily="monospace" />
+
+                    <TextView
+                        android:id="@+id/tvMirrorIcon"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:layout_marginTop="10dp"
+                        android:text="▲ SEGUIR EM FRENTE"
+                        android:textColor="#E8EDF3"
+                        android:textSize="13sp"
+                        android:textStyle="bold" />
+
+                    <TextView
+                        android:id="@+id/tvMirrorPrimary"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:layout_marginTop="6dp"
+                        android:text="0 km/h"
+                        android:textColor="#22C785"
+                        android:textSize="38sp"
+                        android:textStyle="bold"
+                        android:fontFamily="monospace" />
+
+                    <TextView
+                        android:id="@+id/tvMirrorBottom"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:layout_marginTop="8dp"
+                        android:text="SESSÃO: 0.0 km"
+                        android:textColor="#00C2D9"
+                        android:textSize="11sp"
+                        android:textStyle="bold" />
+                </LinearLayout>
 
                 <TextView
                     android:id="@+id/tvMirrorMode"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:background="#070A11"
-                    android:paddingStart="10dp"
-                    android:paddingTop="3dp"
-                    android:paddingEnd="10dp"
-                    android:paddingBottom="3dp"
-                    android:text="Modo: Standby"
-                    android:textColor="#38BDF8"
+                    android:layout_gravity="center_horizontal"
+                    android:layout_marginTop="12dp"
+                    android:text="MODO: STANDBY"
+                    android:textColor="#8B9BB4"
                     android:textSize="11sp"
                     android:textStyle="bold" />
 
-                <!-- Ícone simulado -->
-                <TextView
-                    android:id="@+id/tvMirrorIcon"
-                    android:layout_width="wrap_content"
+                <!-- Resumo de Telemetria (Grid de 2x2) -->
+                <LinearLayout
+                    android:layout_width="match_parent"
                     android:layout_height="wrap_content"
-                    android:layout_marginTop="10dp"
-                    android:text="▲ Seguir em Frente"
-                    android:textColor="#F8FAFC"
-                    android:textSize="16sp"
-                    android:textStyle="bold" />
+                    android:layout_marginTop="20dp"
+                    android:orientation="horizontal">
 
-                <!-- Valor Principal (Velocidade ou Distância da Curva) -->
-                <TextView
-                    android:id="@+id/tvMirrorPrimary"
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:layout_marginTop="4dp"
-                    android:text="0 km/h"
-                    android:textColor="#10B981"
-                    android:textSize="36sp"
-                    android:textStyle="bold" />
+                    <LinearLayout
+                        android:layout_width="0dp"
+                        android:layout_height="wrap_content"
+                        android:layout_weight="1"
+                        android:layout_marginEnd="6dp"
+                        android:background="@drawable/bg_card"
+                        android:padding="12dp"
+                        android:orientation="vertical">
+                        <TextView
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:text="VELOCIDADE GPS"
+                            android:textColor="#8B9BB4"
+                            android:textSize="10sp"
+                            android:textStyle="bold" />
+                        <TextView
+                            android:id="@+id/tvDashSpeed"
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:layout_marginTop="4dp"
+                            android:text="0 km/h"
+                            android:textColor="#22C785"
+                            android:textSize="20sp"
+                            android:textStyle="bold"
+                            android:fontFamily="monospace" />
+                    </LinearLayout>
 
-                <!-- Linha Inferior (ETA ou Hodômetro) -->
-                <TextView
-                    android:id="@+id/tvMirrorBottom"
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:layout_marginTop="4dp"
-                    android:text="Viagem: 0.0 km"
-                    android:textColor="#94A3B8"
-                    android:textSize="13sp" />
+                    <LinearLayout
+                        android:layout_width="0dp"
+                        android:layout_height="wrap_content"
+                        android:layout_weight="1"
+                        android:layout_marginStart="6dp"
+                        android:background="@drawable/bg_card"
+                        android:padding="12dp"
+                        android:orientation="vertical">
+                        <TextView
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:text="DISTÂNCIA SESSÃO"
+                            android:textColor="#8B9BB4"
+                            android:textSize="10sp"
+                            android:textStyle="bold" />
+                        <TextView
+                            android:id="@+id/tvDashTrip"
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:layout_marginTop="4dp"
+                            android:text="0.0 km"
+                            android:textColor="#E8EDF3"
+                            android:textSize="20sp"
+                            android:textStyle="bold"
+                            android:fontFamily="monospace" />
+                    </LinearLayout>
+                </LinearLayout>
+
             </LinearLayout>
+        </ScrollView>
 
-            <!-- CONFIGURAÇÕES DE PILOTAGEM -->
+        <!-- ==================== TAB 2: NAVEGAÇÃO ==================== -->
+        <ScrollView
+            android:id="@+id/tabNavigation"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:padding="16dp"
+            android:visibility="gone">
+
             <LinearLayout
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:layout_marginTop="10dp"
-                android:background="#151D2E"
-                android:orientation="vertical"
-                android:padding="12dp">
+                android:orientation="vertical">
 
                 <TextView
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:text="⚙️ CONFIGURAÇÕES DE PILOTAGEM"
-                    android:textColor="#94A3B8"
+                    android:text="INTEGRAÇÃO TURN-BY-TURN"
+                    android:textColor="#8B9BB4"
                     android:textSize="11sp"
                     android:textStyle="bold" />
 
-                <!-- Auto-Conexão -->
-                <CheckBox
-                    android:id="@+id/cbAutoConnect"
-                    android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
-                    android:layout_marginTop="6dp"
-                    android:text="Auto-conectar ao ligar a moto (Zero consumo parado)"
-                    android:textColor="#F1F5F9"
-                    android:textSize="13sp" />
-
-                <!-- Modo Cruzeiro (sem rota) -->
-                <TextView
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:layout_marginTop="8dp"
-                    android:text="Exibição sem rota ativa:"
-                    android:textColor="#CBD5E1"
-                    android:textSize="12sp" />
-
-                <RadioGroup
-                    android:id="@+id/rgCruiseMode"
-                    android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
-                    android:orientation="horizontal">
-
-                    <RadioButton
-                        android:id="@+id/rbSpeedometer"
-                        android:layout_width="0dp"
-                        android:layout_height="wrap_content"
-                        android:layout_weight="1"
-                        android:checked="true"
-                        android:text="Velocímetro"
-                        android:textColor="#F1F5F9"
-                        android:textSize="13sp" />
-
-                    <RadioButton
-                        android:id="@+id/rbCompass"
-                        android:layout_width="0dp"
-                        android:layout_height="wrap_content"
-                        android:layout_weight="1"
-                        android:text="Bússola 360°"
-                        android:textColor="#F1F5F9"
-                        android:textSize="13sp" />
-                </RadioGroup>
-
-                <!-- Status da Integração Waze / Maps -->
+                <!-- Banner de Permissão -->
                 <LinearLayout
                     android:id="@+id/llNotificationWarning"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
-                    android:layout_marginTop="8dp"
-                    android:background="#1E1B4B"
-                    android:orientation="vertical"
-                    android:padding="8dp">
+                    android:layout_marginTop="10dp"
+                    android:background="@drawable/bg_card"
+                    android:padding="12dp"
+                    android:orientation="vertical">
 
                     <TextView
                         android:id="@+id/tvNotificationStatus"
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
-                        android:text="⚠️ Para ler Google Maps e Waze, ative a permissão:"
-                        android:textColor="#E0E7FF"
+                        android:text="Aguardando autorização de notificações..."
+                        android:textColor="#F5A623"
                         android:textSize="12sp" />
 
                     <Button
@@ -225,70 +260,325 @@
                         style="?android:attr/buttonStyleSmall"
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
-                        android:layout_marginTop="4dp"
-                        android:backgroundTint="#4F46E5"
-                        android:text="Autorizar Leitura do Maps/Waze"
-                        android:textColor="#FFFFFF" />
+                        android:layout_marginTop="8dp"
+                        android:backgroundTint="#00C2D9"
+                        android:text="Autorizar Acesso ao Maps / Waze"
+                        android:textColor="#0A0E17"
+                        android:textStyle="bold" />
                 </LinearLayout>
-            </LinearLayout>
 
-            <!-- BOTÃO PARA EXPANDIR FERRAMENTAS & ENGENHARIA -->
-            <Button
-                android:id="@+id/btnToggleTools"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:layout_marginTop="10dp"
-                android:backgroundTint="#1E293B"
-                android:text="🛠️ Ver Ferramentas de Teste, Explorador e Logs ▼"
-                android:textColor="#94A3B8" />
-
-            <!-- SEÇÃO DE FERRAMENTAS (EXPANSÍVEL) -->
-            <LinearLayout
-                android:id="@+id/llToolsSection"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:orientation="vertical"
-                android:visibility="gone">
-
-                <!-- Sincronizar Relógio e Teste de Chamada -->
+                <!-- Card de Instrução Ativa -->
                 <LinearLayout
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
-                    android:layout_marginTop="6dp"
-                    android:orientation="horizontal">
-
-                    <Button
-                        android:id="@+id/btnSyncClock"
-                        android:layout_width="0dp"
-                        android:layout_height="wrap_content"
-                        android:layout_weight="1"
-                        android:layout_marginEnd="3dp"
-                        android:text="🕒 Acertar Relógio" />
-
-                    <Button
-                        android:id="@+id/btnCall"
-                        android:layout_width="0dp"
-                        android:layout_height="wrap_content"
-                        android:layout_weight="1"
-                        android:layout_marginStart="3dp"
-                        android:text="📞 Alerta Ligação" />
-                </LinearLayout>
-
-                <!-- EXPLORADOR DE ÍCONES (FUZZING) -->
-                <LinearLayout
-                    android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
-                    android:layout_marginTop="8dp"
-                    android:background="#151D2E"
-                    android:orientation="vertical"
-                    android:padding="10dp">
+                    android:layout_marginTop="14dp"
+                    android:background="@drawable/bg_card"
+                    android:padding="16dp"
+                    android:orientation="vertical">
 
                     <TextView
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
-                        android:text="🔍 EXPLORADOR DE ÍCONES (FUZZER)"
-                        android:textColor="#38BDF8"
+                        android:text="PRÓXIMA MANOBRA"
+                        android:textColor="#00C2D9"
+                        android:textSize="10sp"
+                        android:textStyle="bold" />
+
+                    <TextView
+                        android:id="@+id/tvNavManeuverTitle"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:layout_marginTop="8dp"
+                        android:text="Nenhuma rota ativa no momento"
+                        android:textColor="#E8EDF3"
+                        android:textSize="16sp"
+                        android:textStyle="bold" />
+
+                    <TextView
+                        android:id="@+id/tvNavDistance"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:layout_marginTop="4dp"
+                        android:text="-- m"
+                        android:textColor="#22C785"
+                        android:textSize="32sp"
+                        android:fontFamily="monospace"
+                        android:textStyle="bold" />
+
+                    <TextView
+                        android:id="@+id/tvNavEta"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:layout_marginTop="4dp"
+                        android:text="Chegada estimada: --:--"
+                        android:textColor="#8B9BB4"
+                        android:textSize="12sp" />
+                </LinearLayout>
+
+                <TextView
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="14dp"
+                    android:text="Inicie uma rota no Google Maps ou no Waze com o celular no bolso. As conversões e saídas de rotatórias serão enviadas automaticamente para o display da moto."
+                    android:textColor="#50607A"
+                    android:textSize="11sp" />
+            </LinearLayout>
+        </ScrollView>
+
+        <!-- ==================== TAB 3: CRUZEIRO ==================== -->
+        <ScrollView
+            android:id="@+id/tabCruise"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:padding="16dp"
+            android:visibility="gone">
+
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="vertical">
+
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="INSTRUMENTAÇÃO DE CRUZEIRO"
+                    android:textColor="#8B9BB4"
+                    android:textSize="11sp"
+                    android:textStyle="bold" />
+
+                <!-- Velocímetro Grande -->
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="12dp"
+                    android:background="@drawable/bg_card"
+                    android:padding="20dp"
+                    android:gravity="center"
+                    android:orientation="vertical">
+
+                    <TextView
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="VELOCIDADE REAL"
+                        android:textColor="#8B9BB4"
                         android:textSize="11sp"
+                        android:textStyle="bold" />
+
+                    <TextView
+                        android:id="@+id/tvCruiseSpeedLarge"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:layout_marginTop="6dp"
+                        android:text="0"
+                        android:textColor="#22C785"
+                        android:textSize="64sp"
+                        android:textStyle="bold"
+                        android:fontFamily="monospace" />
+
+                    <TextView
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="KM / H"
+                        android:textColor="#8B9BB4"
+                        android:textSize="13sp"
+                        android:textStyle="bold" />
+                </LinearLayout>
+
+                <!-- Bússola e Rumo -->
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="12dp"
+                    android:background="@drawable/bg_card"
+                    android:padding="16dp"
+                    android:orientation="horizontal">
+
+                    <LinearLayout
+                        android:layout_width="0dp"
+                        android:layout_height="wrap_content"
+                        android:layout_weight="1"
+                        android:orientation="vertical">
+                        <TextView
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:text="RUMO MAGNÉTICO"
+                            android:textColor="#8B9BB4"
+                            android:textSize="10sp"
+                            android:textStyle="bold" />
+                        <TextView
+                            android:id="@+id/tvCruiseBearing"
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:layout_marginTop="4dp"
+                            android:text="0° N"
+                            android:textColor="#00C2D9"
+                            android:textSize="22sp"
+                            android:textStyle="bold"
+                            android:fontFamily="monospace" />
+                    </LinearLayout>
+
+                    <LinearLayout
+                        android:layout_width="0dp"
+                        android:layout_height="wrap_content"
+                        android:layout_weight="1"
+                        android:orientation="vertical">
+                        <TextView
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:text="ODÔMETRO PARCIAL"
+                            android:textColor="#8B9BB4"
+                            android:textSize="10sp"
+                            android:textStyle="bold" />
+                        <TextView
+                            android:id="@+id/tvCruiseTrip"
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:layout_marginTop="4dp"
+                            android:text="0.0 km"
+                            android:textColor="#E8EDF3"
+                            android:textSize="22sp"
+                            android:textStyle="bold"
+                            android:fontFamily="monospace" />
+                    </LinearLayout>
+                </LinearLayout>
+
+                <!-- Seletor de Modo Cruzeiro -->
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="14dp"
+                    android:background="@drawable/bg_card"
+                    android:padding="14dp"
+                    android:orientation="vertical">
+
+                    <TextView
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="EXIBIÇÃO QUANDO LIVRE DE ROTAS"
+                        android:textColor="#8B9BB4"
+                        android:textSize="10sp"
+                        android:textStyle="bold" />
+
+                    <RadioGroup
+                        android:id="@+id/rgCruiseMode"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:layout_marginTop="6dp"
+                        android:orientation="horizontal">
+
+                        <RadioButton
+                            android:id="@+id/rbSpeedometer"
+                            android:layout_width="0dp"
+                            android:layout_height="wrap_content"
+                            android:layout_weight="1"
+                            android:checked="true"
+                            android:text="Velocímetro"
+                            android:textColor="#E8EDF3"
+                            android:textSize="13sp" />
+
+                        <RadioButton
+                            android:id="@+id/rbCompass"
+                            android:layout_width="0dp"
+                            android:layout_height="wrap_content"
+                            android:layout_weight="1"
+                            android:text="Bússola 360°"
+                            android:textColor="#E8EDF3"
+                            android:textSize="13sp" />
+                    </RadioGroup>
+                </LinearLayout>
+
+            </LinearLayout>
+        </ScrollView>
+
+        <!-- ==================== TAB 4: DISPOSITIVO ==================== -->
+        <ScrollView
+            android:id="@+id/tabDevice"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:padding="16dp"
+            android:visibility="gone">
+
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="vertical">
+
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="CONEXÃO &amp; DISPOSITIVO (RE_DISP)"
+                    android:textColor="#8B9BB4"
+                    android:textSize="11sp"
+                    android:textStyle="bold" />
+
+                <!-- Conexão BLE -->
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="10dp"
+                    android:background="@drawable/bg_card"
+                    android:padding="14dp"
+                    android:orientation="vertical">
+
+                    <Button
+                        android:id="@+id/btnConnect"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:backgroundTint="#00C2D9"
+                        android:text="Conectar ao Tripper Pod"
+                        android:textColor="#0A0E17"
+                        android:textStyle="bold" />
+
+                    <CheckBox
+                        android:id="@+id/cbAutoConnect"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:layout_marginTop="8dp"
+                        android:text="Auto-conectar ao ligar a moto (Zero consumo parado)"
+                        android:textColor="#E8EDF3"
+                        android:textSize="12sp" />
+
+                    <LinearLayout
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:layout_marginTop="8dp"
+                        android:orientation="horizontal">
+
+                        <Button
+                            android:id="@+id/btnSyncClock"
+                            style="?android:attr/buttonStyleSmall"
+                            android:layout_width="0dp"
+                            android:layout_height="wrap_content"
+                            android:layout_weight="1"
+                            android:layout_marginEnd="4dp"
+                            android:text="🕒 Acertar Hora" />
+
+                        <Button
+                            android:id="@+id/btnCall"
+                            style="?android:attr/buttonStyleSmall"
+                            android:layout_width="0dp"
+                            android:layout_height="wrap_content"
+                            android:layout_weight="1"
+                            android:layout_marginStart="4dp"
+                            android:text="📞 Alerta Chamada" />
+                    </LinearLayout>
+                </LinearLayout>
+
+                <!-- Explorador de Ícones -->
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="12dp"
+                    android:background="@drawable/bg_card"
+                    android:padding="14dp"
+                    android:orientation="vertical">
+
+                    <TextView
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="EXPLORADOR DE ÍCONES (FUZZER)"
+                        android:textColor="#00C2D9"
+                        android:textSize="10sp"
                         android:textStyle="bold" />
 
                     <TextView
@@ -298,10 +588,10 @@
                         android:layout_marginTop="6dp"
                         android:background="#070A11"
                         android:padding="8dp"
-                        android:text="Código: 0x00 (0) - Destino (Chegada)"
-                        android:textColor="#F1F5F9"
-                        android:textSize="13sp"
-                        android:textStyle="bold" />
+                        android:text="Código: 0x00 - Destino (Chegada)"
+                        android:textColor="#E8EDF3"
+                        android:textSize="12sp"
+                        android:fontFamily="monospace" />
 
                     <LinearLayout
                         android:layout_width="match_parent"
@@ -315,7 +605,7 @@
                             android:layout_height="wrap_content"
                             android:layout_weight="1"
                             android:layout_marginEnd="4dp"
-                            android:text="◀ Anterior" />
+                            android:text="◀ Ant" />
 
                         <Button
                             android:id="@+id/btnNextIcon"
@@ -323,9 +613,9 @@
                             android:layout_height="wrap_content"
                             android:layout_weight="1"
                             android:layout_marginStart="4dp"
-                            android:backgroundTint="#0284C7"
-                            android:textColor="#FFFFFF"
-                            android:text="Próximo ▶" />
+                            android:backgroundTint="#00C2D9"
+                            android:textColor="#0A0E17"
+                            android:text="Próx ▶" />
                     </LinearLayout>
 
                     <LinearLayout
@@ -340,7 +630,6 @@
                             android:layout_width="0dp"
                             android:layout_height="wrap_content"
                             android:layout_weight="1"
-                            android:layout_marginEnd="2dp"
                             android:text="-10" />
 
                         <Button
@@ -349,7 +638,6 @@
                             android:layout_width="0dp"
                             android:layout_height="wrap_content"
                             android:layout_weight="1"
-                            android:layout_marginStart="2dp"
                             android:text="+10" />
 
                         <Button
@@ -358,73 +646,163 @@
                             android:layout_width="0dp"
                             android:layout_height="wrap_content"
                             android:layout_weight="2"
-                            android:layout_marginStart="4dp"
-                            android:text="Pular p/ Ocultos" />
+                            android:text="Pular Ocultos" />
                     </LinearLayout>
 
                     <Button
                         android:id="@+id/btnRecordDiscovery"
+                        style="?android:attr/buttonStyleSmall"
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
                         android:layout_marginTop="6dp"
-                        android:backgroundTint="#10B981"
-                        android:textColor="#FFFFFF"
-                        android:text="📝 Anotar O Que Apareceu no Visor" />
+                        android:backgroundTint="#22C785"
+                        android:textColor="#0A0E17"
+                        android:textStyle="bold"
+                        android:text="📝 Anotar Descoberta" />
                 </LinearLayout>
 
-                <!-- Logs Persistentes -->
+                <!-- Console de Logs -->
                 <LinearLayout
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
-                    android:layout_marginTop="10dp"
-                    android:gravity="center_vertical"
-                    android:orientation="horizontal">
+                    android:layout_marginTop="12dp"
+                    android:background="@drawable/bg_card"
+                    android:padding="12dp"
+                    android:orientation="vertical">
+
+                    <LinearLayout
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:gravity="center_vertical"
+                        android:orientation="horizontal">
+
+                        <TextView
+                            android:layout_width="0dp"
+                            android:layout_height="wrap_content"
+                            android:layout_weight="1"
+                            android:text="LOGS EM DISCO"
+                            android:textColor="#8B9BB4"
+                            android:textSize="10sp"
+                            android:textStyle="bold" />
+
+                        <Button
+                            android:id="@+id/btnCopyLogs"
+                            style="?android:attr/buttonStyleSmall"
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:text="📋 Copiar" />
+
+                        <Button
+                            android:id="@+id/btnShareLogs"
+                            style="?android:attr/buttonStyleSmall"
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:text="📤 Enviar" />
+
+                        <Button
+                            android:id="@+id/btnClearLogs"
+                            style="?android:attr/buttonStyleSmall"
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:text="🗑️" />
+                    </LinearLayout>
 
                     <TextView
-                        android:layout_width="0dp"
-                        android:layout_height="wrap_content"
-                        android:layout_weight="1"
-                        android:text="LOGS (SALVOS NO DISCO)"
-                        android:textColor="#94A3B8"
-                        android:textSize="11sp"
-                        android:textStyle="bold" />
-
-                    <Button
-                        android:id="@+id/btnCopyLogs"
-                        style="?android:attr/buttonStyleSmall"
-                        android:layout_width="wrap_content"
-                        android:layout_height="wrap_content"
-                        android:text="📋 Copiar" />
-
-                    <Button
-                        android:id="@+id/btnShareLogs"
-                        style="?android:attr/buttonStyleSmall"
-                        android:layout_width="wrap_content"
-                        android:layout_height="wrap_content"
-                        android:text="📤 Enviar" />
-
-                    <Button
-                        android:id="@+id/btnClearLogs"
-                        style="?android:attr/buttonStyleSmall"
-                        android:layout_width="wrap_content"
-                        android:layout_height="wrap_content"
-                        android:text="🗑️" />
+                        android:id="@+id/logView"
+                        android:layout_width="match_parent"
+                        android:layout_height="140dp"
+                        android:layout_marginTop="6dp"
+                        android:background="#070A11"
+                        android:fontFamily="monospace"
+                        android:padding="6dp"
+                        android:scrollbars="vertical"
+                        android:textColor="#22C785"
+                        android:textSize="10sp" />
                 </LinearLayout>
 
-                <TextView
-                    android:id="@+id/logView"
+                <!-- Open Source Footer -->
+                <LinearLayout
                     android:layout_width="match_parent"
-                    android:layout_height="160dp"
-                    android:layout_marginTop="4dp"
-                    android:background="#070A11"
-                    android:fontFamily="monospace"
-                    android:padding="8dp"
-                    android:scrollbars="vertical"
-                    android:textColor="#10B981"
-                    android:textSize="10sp" />
-            </LinearLayout>
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="20dp"
+                    android:layout_marginBottom="16dp"
+                    android:gravity="center"
+                    android:orientation="vertical">
 
-        </LinearLayout>
-    </ScrollView>
+                    <TextView
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="Open technology for motorcycle instrumentation."
+                        android:textColor="#8B9BB4"
+                        android:textSize="11sp"
+                        android:textStyle="italic" />
+
+                    <TextView
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:layout_marginTop="4dp"
+                        android:text="OpenTripper v0.5.0 • GitHub Open Source"
+                        android:textColor="#00C2D9"
+                        android:textSize="10sp" />
+                </LinearLayout>
+
+            </LinearLayout>
+        </ScrollView>
+
+    </FrameLayout>
+
+    <View
+        android:layout_width="match_parent"
+        android:layout_height="1dp"
+        android:background="#232F42" />
+
+    <!-- ==================== BOTTOM NAVIGATION BAR ==================== -->
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="56dp"
+        android:background="#141C28"
+        android:orientation="horizontal">
+
+        <Button
+            android:id="@+id/btnTabDashboard"
+            style="?android:attr/borderlessButtonStyle"
+            android:layout_width="0dp"
+            android:layout_height="match_parent"
+            android:layout_weight="1"
+            android:text="📊\nPainel"
+            android:textColor="#00C2D9"
+            android:textSize="11sp"
+            android:textStyle="bold" />
+
+        <Button
+            android:id="@+id/btnTabNavigation"
+            style="?android:attr/borderlessButtonStyle"
+            android:layout_width="0dp"
+            android:layout_height="match_parent"
+            android:layout_weight="1"
+            android:text="🧭\nRotas"
+            android:textColor="#8B9BB4"
+            android:textSize="11sp" />
+
+        <Button
+            android:id="@+id/btnTabCruise"
+            style="?android:attr/borderlessButtonStyle"
+            android:layout_width="0dp"
+            android:layout_height="match_parent"
+            android:layout_weight="1"
+            android:text="⚡\nCruzeiro"
+            android:textColor="#8B9BB4"
+            android:textSize="11sp" />
+
+        <Button
+            android:id="@+id/btnTabDevice"
+            style="?android:attr/borderlessButtonStyle"
+            android:layout_width="0dp"
+            android:layout_height="match_parent"
+            android:layout_weight="1"
+            android:text="🔧\nAparelho"
+            android:textColor="#8B9BB4"
+            android:textSize="11sp" />
+    </LinearLayout>
 
 </LinearLayout>
