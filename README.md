@@ -5,130 +5,137 @@
   <br>
   <strong>Open technology for motorcycle instrumentation.</strong>
   <br>
-  <em>Aplicativo open source de instrumentação automotiva, telemetria e navegação para motocicletas, desenvolvido inicialmente para a Royal Enfield Hunter 350 e seu Tripper Pod.</em>
+  <em>Open-source automotive instrumentation, telemetry, and navigation application for motorcycles, initially built for the Royal Enfield Hunter 350 and its Tripper Pod.</em>
 </p>
 
 <p align="center">
-  <a href="https://github.com/OSolerHugo/opentripper/releases/latest"><img src="https://img.shields.io/github/v/release/OSolerHugo/opentripper?color=00C2D9&style=for-the-badge&label=Versão" alt="Latest Release"></a>
-  <a href="LICENSE"><img src="https://img.shields.io/badge/Licença-MIT-22C785?style=for-the-badge" alt="License MIT"></a>
+  🌐 <strong>English</strong> | <a href="README.pt-BR.md"><strong>Português (Brasil)</strong></a>
+</p>
+
+<p align="center">
+  <a href="https://github.com/OSolerHugo/opentripper/releases/latest"><img src="https://img.shields.io/github/v/release/OSolerHugo/opentripper?color=00C2D9&style=for-the-badge&label=Release" alt="Latest Release"></a>
+  <a href="LICENSE"><img src="https://img.shields.io/badge/License-MIT-22C785?style=for-the-badge" alt="License MIT"></a>
   <a href="#"><img src="https://img.shields.io/badge/Android-8.0%2B%20(API%2026%2B)-141C28?style=for-the-badge&logo=android" alt="Android 8.0+"></a>
-  <a href="PROTOCOLO.md"><img src="https://img.shields.io/badge/Hardware-Hunter%20350%20%7C%20Tripper%20Pod-F5A623?style=for-the-badge" alt="Hardware"></a>
+  <a href="PROTOCOL.md"><img src="https://img.shields.io/badge/Target-Hunter%20350%20%7C%20Tripper%20Pod-F5A623?style=for-the-badge" alt="Target Hardware"></a>
 </p>
 
 ---
 
-## ⚡ Download Rápido
+## ⚡ Quick Download
 
-Baixe a versão mais recente diretamente para o seu smartphone Android. Este link é permanente e aponta sempre para o build mais novo com chave de assinatura definitiva (as atualizações subsequentes instalam por cima sem conflito):
+Download the latest version directly to your Android smartphone. This link is permanent and always points to the newest release signed with the project's permanent keystore (subsequent updates install in-place without signature conflicts):
 
 <p align="center">
   <a href="https://github.com/OSolerHugo/opentripper/releases/latest/download/opentripper.apk">
-    <img src="https://img.shields.io/badge/DOWNLOAD-APK%20DEFINITIVO-00C2D9?style=for-the-badge&logo=android&logoColor=white" height="42" alt="Download APK" />
+    <img src="https://img.shields.io/badge/DOWNLOAD-LATEST%20APK-00C2D9?style=for-the-badge&logo=android&logoColor=white" height="42" alt="Download APK" />
   </a>
 </p>
 
 > [!NOTE]
-> **Instalação e Google Play Protect:** Como o OpenTripper é distribuído diretamente via GitHub (fora da Google Play Store), o Google Play Protect pode exibir uma mensagem informando desenvolvedor não reconhecido. Basta clicar em **"Mais detalhes"** ➔ **"Instalar assim mesmo"**. O projeto é 100% auditável e open source.
+> **Installation & Google Play Protect:** Because OpenTripper is distributed directly via GitHub releases (outside the Google Play Store), Google Play Protect may display a prompt stating the app developer is unrecognized. Simply tap **"More details"** ➔ **"Install anyway"**. The project is 100% open-source and auditable.
 
 ---
 
-## 🧭 O que é o OpenTripper?
+## 🧭 What is OpenTripper?
 
-O painel secundário **Tripper Pod** que equipa a **Royal Enfield Hunter 350** (e outras motos da plataforma J-Series como Meteor e Classic) opera através de um módulo BLE da NXP (`RE_DISP`). O aplicativo proprietário oficial possui restrições de navegação, limitações de rota e consumo excessivo de bateria.
+The secondary **Tripper Pod** display installed on the **Royal Enfield Hunter 350** (and other J-Series platform bikes such as Meteor and Classic 350) operates via an NXP Bluetooth Low Energy (BLE) module advertising as `RE_DISP`. The official proprietary mobile app imposes route restrictions, limited navigation features, and high battery consumption.
 
-O **OpenTripper** foi desenvolvido a partir de engenharia reversa completa do protocolo para fornecer:
-1. **Liberdade total de navegação:** Uso do Google Maps e Waze reais na tela do Tripper Pod.
-2. **Instrumentação automotiva no celular:** Velocímetro digital GPS de alta precisão, odômetro, bússola e telemetria.
-3. **Estabilidade de conexão:** Motor BLE *Dual-Role GATT Server* nativo que elimina as quedas de 5 segundos causadas pelos watchdogs proprietários do firmware.
-4. **Respeito à bateria:** Desligamento imediato do hardware GPS do celular assim que a moto é desligada.
-
----
-
-## ✨ Principais Funcionalidades
-
-### 🔄 Modo Híbrido (Google Maps & Waze Turn-by-Turn)
-* **Captura em Segundo Plano:** Lê as notificações oficiais do Google Maps e Waze via Notification Listener Service e converte manobras instantaneamente em pacotes binários do Tripper.
-* **Catálogo Amplo de Manobras:** Conversões à esquerda/direita (90°, suaves, fechadas), saídas de rodovia, bifurcações, retornos (U-Turn) e reta.
-* **Suporte Completo a Rotatórias:** Mapeamento verificado em bancada e na moto da 1ª à 9ª saída (`0x0B` a `0x13`).
-* **Distância e ETA:** Exibição precisa em metros ou quilômetros no visor secundário do Pod.
-
-### 🏎️ Instrumentação & Design Industrial
-Interface mobile-first projetada sob a diretriz de instrumentação automotiva técnica, robustez industrial e acabamento profissional escuro:
-* **Tema Dark Técnico:** Superfícies em grafite (`#0A0E17`, `#141C28`), texto de alto contraste (`#E8EDF3`), destaques em Cyan (`#00C2D9`), Verde (`#22C785`), Âmbar (`#F5A623`) e Vermelho (`#E05252`).
-* **Navegação em 4 Áreas:**
-  * **1. Dashboard:** Conexão Bluetooth, status de pareamento, velocidade em tempo real, resumo de sessão e espelho virtual do display do Tripper.
-  * **2. Navegação:** Monitor de rota ativa com banner estilizado do app de navegação (Maps/Waze), instrução da próxima manobra e distância restante.
-  * **3. Cruzeiro:** Painel de cruzeiro com velocímetro digital em destaque, indicador de rumo/bússola, odômetro parcial da viagem e tempo de deslocamento.
-  * **4. Dispositivo:** Conexão BLE, auto-reconexão, banner dinâmico para validação do PIN de pareamento, botão **"Esquecer Dispositivo"**, explorador de ícones (Fuzzer) e console de telemetria.
-
-### 🛡️ Motor BLE com Dual-Role GATT Server
-* O firmware da NXP no Tripper Pod exige que o celular não atue apenas como cliente, mas também instancie um servidor local GATT com o serviço `01FF0100-BA5E-F4EE-5CA1-EB1E5E4B1CE0`.
-* O OpenTripper executa ambos simultaneamente, com serialização estrita de pacotes de 20 bytes com checksum `CRC-16/CCITT-FALSE` e keepalive contínuo (1,5s) para evitar o watchdog de timeout do painel.
-
-### 🔍 Fuzzer & Diagnóstico de Ícones Integrado
-* Ferramenta de exploração integrada no app permitindo injetar sequencialmente os 256 códigos (`0x00` a `0xFF`) para inspecionar ícones ocultos do firmware diretamente no visor da motocicleta, gravando anotações no arquivo local `opentripper_logs.txt`.
+**OpenTripper** was built through complete reverse engineering of the BLE protocol to deliver:
+1. **Total Navigation Freedom:** Run real Google Maps and Waze turn-by-turn navigation directly on the Tripper Pod screen.
+2. **Automotive Cockpit Telemetry:** High-precision GPS digital speedometer, partial trip odometer, compass heading, and elapsed ride time.
+3. **Rock-Solid Connection Stability:** Native *Dual-Role GATT Server* engine that eliminates the 5-second connection drop caused by the NXP firmware watchdogs.
+4. **Zero-Waste Battery Strategy:** Phone GPS sensor hardware is automatically powered down the instant the motorcycle disconnects.
 
 ---
 
-## 📱 Instalação e Configuração
+## ✨ Key Features
 
-### Pré-requisitos
-* Smartphone com **Android 8.0 (Oreo / API 26)** ou superior.
-* Royal Enfield Hunter 350 com Tripper Pod funcional (ou outra Royal Enfield com módulo NXP BLE `RE_DISP`).
+### 🔄 Hybrid Navigation (Google Maps & Waze Turn-by-Turn)
+* **Background Notification Listener:** Seamlessly captures navigation instructions from Google Maps and Waze notifications in real time and converts them into Tripper hardware binary packets.
+* **Comprehensive Maneuver Catalog:** 90° turns, slight turns, sharp turns, highway exits, forks, U-turns, and straight lanes.
+* **Full Roundabout Exit Sequence:** Verified on both test benches and physical motorcycles from the 1st through the 9th exit (`0x0B` to `0x13`).
+* **Real-Time Distance & ETA:** Accurate display in meters or kilometers on the secondary Pod screen.
 
-### Passo a Passo
+### 🏎️ Industrial Automotive Instrumentation & Design System
+Mobile-first interface designed around telemetry precision, mechanical robustness, and professional dark finish:
+* **Dark Technical Palette:** Graphite backgrounds (`#0A0E17`, `#141C28`), high-contrast text (`#E8EDF3`), Cyan accents for Bluetooth/Navigation (`#00C2D9`), Green for normal status/speed (`#22C785`), Amber for warnings (`#F5A623`), and Red for errors (`#E05252`).
+* **4 Core Navigation Tabs:**
+  * **1. Dashboard:** Bluetooth connection status, live speed, trip summary, and a circular gauge mirroring the physical Tripper display.
+  * **2. Navigation:** Active route monitor displaying Google Maps / Waze branded banner, next turn instruction, and remaining distance.
+  * **3. Cruise:** Dedicated cruising cockpit featuring an oversized digital speedometer, heading compass, trip distance, and travel duration.
+  * **4. Device:** BLE connection controls, auto-reconnect toggle, smart PIN validation banner on initial pairing, **"Forget Device"** button, icon fuzzer, and live telemetry log console.
 
-1. **Baixar o APK:** Baixe [opentripper.apk](https://github.com/OSolerHugo/opentripper/releases/latest/download/opentripper.apk).
-2. **Permissões Essenciais:**
-   * **Bluetooth & Localização:** Necessárias para encontrar o dispositivo BLE e calcular a telemetria GPS.
-   * **Acesso a Notificações:** Vá em *Configurações ➔ Notificações ➔ Acesso a Notificações* e autorize o **OpenTripper** para permitir a leitura do Google Maps e Waze.
-3. **Primeira Conexão na Moto:**
-   * Ligue a chave de ignição da moto (a janela de anúncio BLE do Tripper Pod fica aberta por ~30 segundos).
-   * Abra a aba **Dispositivo** e clique em **CONECTAR TRIPPER**.
-   * Quando o Tripper Pod exibir o código de 6 dígitos no mostrador, o OpenTripper exibirá automaticamente o cartão de validação. Digite o código e confirme.
-   * Pronto! O dispositivo fica memorizado para conexões automáticas subsequentes.
+### 🛡️ Dual-Role GATT Server BLE Engine
+* The NXP firmware inside the Tripper Pod requires the phone to act not only as a GATT client, but also to host a local GATT Server with the service UUID `01FF0100-BA5E-F4EE-5CA1-EB1E5E4B1CE0`.
+* OpenTripper handles both roles simultaneously, with a strict 50ms serialization queue, `CRC-16/CCITT-FALSE` packet checksums, and continuous 1.5s keepalive cycles to prevent hardware watchdog timeouts.
 
----
-
-## 🔬 Documentação Técnica do Protocolo
-
-Para engenheiros, entusiastas e desenvolvedores que desejam entender ou expandir a comunicação com o hardware:
-
-* 📄 **[PROTOCOLO.md](PROTOCOLO.md):** Especificação completa com UUIDs, formato do pacote de 20 bytes, algoritmo CRC-16, watchdogs de firmware, pacotes fixos e catálogo detalhado de ícones hexadecimais.
-* 📄 **[Especificações de Design & Arquitetura](docs/superpowers/):** Documentação arquitetural do pipeline de notificações e modo híbrido.
+### 🔍 Built-in Icon Fuzzer & Diagnostics
+* Integrated explorer tool allowing developers and riders to cycle through all 256 opcodes (`0x00` to `0xFF`) directly on their motorcycle, instantly logging observations to `opentripper_logs.txt`.
 
 ---
 
-## 🛠️ Compilação e Desenvolvimento
+## 📱 Installation & Setup
 
-O OpenTripper é construído em Java nativo com Android SDK padrão:
+### Requirements
+* Smartphone running **Android 8.0 (Oreo / API 26)** or higher.
+* Royal Enfield Hunter 350 with Tripper Pod (or any Royal Enfield equipped with an NXP `RE_DISP` BLE module).
+
+### Step-by-Step Guide
+
+1. **Download the APK:** Get [opentripper.apk](https://github.com/OSolerHugo/opentripper/releases/latest/download/opentripper.apk).
+2. **Grant Permissions:**
+   * **Bluetooth & Location:** Required to scan for BLE hardware and compute GPS speed telemetry.
+   * **Notification Access:** Navigate to *Settings ➔ Notifications ➔ Notification Access* (or *Device & App Notifications*) and enable **OpenTripper** so it can read Google Maps and Waze turn updates.
+3. **First-Time Bike Pairing:**
+   * Turn the motorcycle ignition key on (the Tripper Pod advertising window remains open for ~30 seconds).
+   * Open OpenTripper, navigate to the **Dispositivo (Device)** tab, and tap **CONECTAR TRIPPER**.
+   * When the 6-digit PIN code appears on the Tripper display, OpenTripper will automatically display the PIN validation card. Enter the code and tap confirm.
+   * Pairing complete! The device is saved and will reconnect automatically on future rides.
+
+---
+
+## 🔬 Protocol & Technical Documentation
+
+For engineers, researchers, and open-source contributors exploring the hardware:
+
+* 📄 **[PROTOCOL.md](PROTOCOL.md):** Complete technical specification including GATT UUIDs, 20-byte packet structure, CRC-16 algorithm, firmware watchdog timings, system command dictionary, and comprehensive icon opcodes.
+* 📄 **[PROTOCOLO.md (Português)](PROTOCOLO.md):** Portuguese reference document.
+* 📄 **[Architecture & Design Specifications](docs/superpowers/):** Engineering design documents for the notification listener and hybrid navigation pipeline.
+
+---
+
+## 🛠️ Building from Source
+
+OpenTripper is built in native Java using the standard Android SDK:
 
 ```bash
-# Clone o repositório
+# Clone the repository
 git clone https://github.com/OSolerHugo/opentripper.git
 cd opentripper
 
-# Compilar build de debug
+# Build debug APK
 ./gradlew assembleDebug
 
-# Compilar APK assinado de release
+# Build signed release APK
 ./gradlew assembleRelease
 ```
 
-O APK gerado ficará localizado em `app/build/outputs/apk/release/app-release.apk`.
+The compiled APK will be located at `app/build/outputs/apk/release/app-release.apk`.
 
 ---
 
-## 🤝 Contribuição
+## 🤝 Contributing
 
-Contribuições são muito bem-vindas!
-* Encontrou um ícone ou código novo no Tripper? Envie um Pull Request atualizando o `PROTOCOLO.md` ou abra uma *Issue*.
-* Ideias de novas telas de telemetria ou integração com outros sensores Bluetooth (TPMS, velocímetro OBD2) são encorajadas.
+Contributions from the open-source community are very welcome!
+* Discovered a new icon or command opcode on the Tripper display? Submit a Pull Request updating `PROTOCOL.md` or open an Issue.
+* New telemetry screens, integrations with additional Bluetooth sensors (TPMS, OBD2 speedometers), or UI enhancements are encouraged.
+
+See [CONTRIBUTING.md](CONTRIBUTING.md) for contribution guidelines.
 
 ---
 
-## 📄 Licença
+## 📄 License
 
-Distribuído sob a licença **MIT**. Consulte o arquivo [LICENSE](LICENSE) para mais detalhes.
+Distributed under the **MIT License**. See [LICENSE](LICENSE) for details.
 
-*Aviso: Este é um projeto independente da comunidade open source e não possui vínculo formal com a Royal Enfield ou a NXP Semiconductors.*
+*Disclaimer: OpenTripper is an independent open-source project and is not affiliated with, endorsed by, or associated with Royal Enfield or NXP Semiconductors.*

@@ -1,5 +1,7 @@
 # Memória Técnica: Protocolo do Royal Enfield Tripper Pod (Hunter 350)
 
+> 🌐 *English specification available at [PROTOCOL.md](PROTOCOL.md).*
+
 Documento de referência técnica com as descobertas, comportamentos de hardware e regras do protocolo Bluetooth Low Energy (BLE) validados na **Royal Enfield Hunter 350**.
 
 ---

@@ -19,3 +19,7 @@ opentripper-*.apk
 local.properties
 .DS_Store
 Thumbs.db
+.ai-memory.toml
+.agents/
+AGENTS.md
+
