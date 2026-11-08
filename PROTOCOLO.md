@@ -187,3 +187,38 @@ O OpenTripper implementa a partir da versão **v0.3.1** um **Explorador Interati
 2. Para cada código, o pacote de navegação é montado e mantido no loop contínuo de keepalive (1,5s), permitindo ao piloto observar o visor com calma.
 3. Botões de salto rápido (`Pular p/ Ocultos`) avançam diretamente para os blocos não documentados (`0x0B`, `0x12`, `0x23`, `0x28`, `0x40`, `0x46`, etc.).
 4. O botão **"📝 Anotar O Que Apareceu"** abre um formulário que grava imediatamente a descrição do que surgiu no painel no arquivo persistente `opentripper_logs.txt`.
+
+---
+
+## 8. Mapeamento de Manobras de Navegação (Google Maps & Waze)
+
+O OpenTripper converte em tempo real as notificações textuais emitidas pelos aplicativos de navegação para os opcodes vetoriais do hardware do Tripper Pod através do parser de heurísticas (`TurnParser`):
+
+| Padrão Detectado no Texto da Notificação | Código de Manobra Hex | Ícone no Tripper Pod |
+|---|---|---|
+| `"rotatória"`, `"rotatoria"`, `"roundabout"` + `"1ª"` / `"1st"` / `"primeira"` | `0x0B` | Rotatória 1ª Saída |
+| `"rotatória"`, `"rotatoria"`, `"roundabout"` + `"2ª"` / `"2nd"` / `"segunda"` | `0x0C` | Rotatória 2ª Saída |
+| `"rotatória"`, `"rotatoria"`, `"roundabout"` + `"3ª"` / `"3rd"` / `"terceira"` | `0x0D` | Rotatória 3ª Saída |
+| `"rotatória"`, `"rotatoria"`, `"roundabout"` + `"4ª"` / `"4th"` / `"quarta"` | `0x0E` | Rotatória 4ª Saída |
+| `"rotatória"`, `"rotatoria"`, `"roundabout"` + `"5ª"` / `"5th"` / `"quinta"` | `0x0F` | Rotatória 5ª Saída |
+| `"rotatória"`, `"rotatoria"`, `"roundabout"` + `"6ª"` / `"6th"` / `"sexta"` | `0x10` | Rotatória 6ª Saída |
+| `"rotatória"`, `"rotatoria"`, `"roundabout"` + `"7ª"` / `"7th"` / `"sétima"` | `0x11` | Rotatória 7ª Saída |
+| `"rotatória"`, `"rotatoria"`, `"roundabout"` + `"8ª"` / `"8th"` / `"oitava"` | `0x12` | Rotatória 8ª Saída |
+| `"rotatória"`, `"rotatoria"`, `"roundabout"` + `"9ª"` / `"9th"` / `"nona"` | `0x13` | Rotatória 9ª Saída |
+| `"retorno"`, `"u-turn"` | `0x3D` | Retorno (U-Turn) |
+| `"curva fechada à esquerda"`, `"sharp left"` | `0x16` | Curva fechada à esquerda |
+| `"curva fechada à direita"`, `"sharp right"` | `0x17` | Curva fechada à direita |
+| `"curva suave à esquerda"`, `"slight left"`, `"mantenha-se à esquerda"` | `0x18` | Curva suave à esquerda |
+| `"curva suave à direita"`, `"slight right"`, `"mantenha-se à direita"` | `0x19` | Curva suave à direita |
+| `"vire à esquerda"`, `"esquerda"`, `"left"` | `0x14` | Virar à esquerda (90°) |
+| `"vire à direita"`, `"direita"`, `"right"` | `0x15` | Virar à direita (90°) |
+| `"saída"`, `"saida"`, `"exit"` + `"esquerda"` | `0x1A` | Saída de rodovia à esquerda |
+| `"saída"`, `"saida"`, `"exit"` + `"direita"` | `0x1B` | Saída de rodovia à direita |
+| `"bifurcação"`, `"bifurcacao"`, `"fork"` + `"esquerda"` | `0x1C` | Bifurcação à esquerda |
+| `"bifurcação"`, `"bifurcacao"`, `"fork"` + `"direita"` | `0x1D` | Bifurcação à direita |
+| `"destino"`, `"chegando"`, `"chegou"` | `0x01` | Destino alcançado |
+| `"siga"`, `"continue"`, `"em frente"` | `0x09` | Seguir em frente |
+
+### Formatação de Distâncias no Barramento (`Bytes [3..5]`):
+* **Valores em Metros (até 999m):** `Bytes [3..4] = valor uint16`, `Byte [5] = 0x01`. Ex: `250 m` ➔ `0x00 0xFA 0x01`.
+* **Valores em Quilômetros (>= 1,0 km):** Convertido para décimos de quilômetro (`km * 10`). `Bytes [3..4] = uint16`, `Byte [5] = 0x02`. Ex: `3,5 km` ➔ `35` decikm ➔ `0x00 0x23 0x02`.
