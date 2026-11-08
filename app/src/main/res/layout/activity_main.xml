@@ -61,6 +61,68 @@
         android:layout_height="1dp"
         android:background="#232F42" />
 
+    <!-- Card de Validação de PIN (Aparece na primeira vez / novo pareamento) -->
+    <LinearLayout
+        android:id="@+id/llPinValidationCard"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:background="#1E1B4B"
+        android:padding="16dp"
+        android:orientation="vertical"
+        android:visibility="gone">
+
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="🔑 VALIDAÇÃO DO TRIPPER POD"
+            android:textColor="#00C2D9"
+            android:textSize="12sp"
+            android:textStyle="bold" />
+
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="4dp"
+            android:text="Digite os números do código PIN que surgiram no visor da moto:"
+            android:textColor="#E8EDF3"
+            android:textSize="13sp" />
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="10dp"
+            android:gravity="center_vertical"
+            android:orientation="horizontal">
+
+            <EditText
+                android:id="@+id/pinInput"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                android:background="#0A0E17"
+                android:hint="Ex: 123456"
+                android:inputType="number"
+                android:maxLength="6"
+                android:padding="12dp"
+                android:textAlignment="center"
+                android:textColor="#22C785"
+                android:textColorHint="#50607A"
+                android:textSize="20sp"
+                android:textStyle="bold"
+                android:fontFamily="monospace" />
+
+            <Button
+                android:id="@+id/btnSendPin"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginStart="8dp"
+                android:backgroundTint="#00C2D9"
+                android:text="Confirmar PIN"
+                android:textColor="#0A0E17"
+                android:textStyle="bold" />
+        </LinearLayout>
+    </LinearLayout>
+
     <!-- Main Content Frame (Tabs) -->
     <FrameLayout
         android:layout_width="match_parent"
@@ -562,6 +624,16 @@
                             android:layout_marginStart="4dp"
                             android:text="📞 Alerta Chamada" />
                     </LinearLayout>
+
+                    <Button
+                        android:id="@+id/btnForgetDevice"
+                        style="?android:attr/buttonStyleSmall"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:layout_marginTop="8dp"
+                        android:backgroundTint="#232F42"
+                        android:text="🗑️ Esquecer Dispositivo / Redefinir Pareamento"
+                        android:textColor="#E8EDF3" />
                 </LinearLayout>
 
                 <!-- Explorador de Ícones -->

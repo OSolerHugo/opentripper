@@ -33,7 +33,7 @@ jobs:
 
       - name: Renomear APK
         run: |
-          cp app/build/outputs/apk/debug/app-debug.apk opentripper-v0.5.0.apk
+          cp app/build/outputs/apk/debug/app-debug.apk opentripper-v0.5.1.apk
           cp app/build/outputs/apk/debug/app-debug.apk opentripper.apk
           ls -la opentripper*.apk
 
@@ -47,15 +47,14 @@ jobs:
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
-          gh release delete v0.5.0 --yes || true
+          gh release delete v0.5.1 --yes || true
           cat << 'EOF' > release_notes.md
-          ### Novidades do OpenTripper v0.5.0 (Identidade Visual Industrial & 4 Abas):
-          - 🎨 **Design Automotivo Industrial:** Nova interface profissional com paleta grafite (#0A0E17), superfícies escuras (#141C28) e acentos Cyan (#00C2D9) e Verde (#22C785).
-          - 🧭 **Navegação em 4 Abas:** Dashboard (mostrador em espelho), Navegação (Waze/Maps), Cruzeiro (Velocímetro e Bússola) e Dispositivo (conexão e diagnóstico).
-          - 🔑 **Assinatura Fixa Definitiva:** O APK agora é assinado com uma chave de release oficial própria. Atualizações futuras instalam por cima sem conflito de assinatura!
-          - 🔗 **Link de Download Permanente:** O link `https://github.com/OSolerHugo/opentripper/releases/latest/download/opentripper.apk` sempre baixa a versão mais recente.
-          - 🏍️ **Novo Ícone Oficial:** Ícone do velocímetro O_T incorporado ao aplicativo.
+          ### Novidades do OpenTripper v0.5.1:
+          - 🔑 **Validação Automática de PIN:** Caixa de digitação de PIN no topo da tela quando o Tripper Pod solicita pareamento na primeira conexão.
+          - 🗑️ **Botão Esquecer Dispositivo:** Opção na aba Dispositivo para redefinir o pareamento quando quiser forçar um novo PIN.
+          - 🎨 **Identidade Visual Completa:** Navegação em 4 abas, mostrador circular automotivo e tema grafite (#0A0E17).
+          - 🔗 **Link Permanente:** `https://github.com/OSolerHugo/opentripper/releases/latest/download/opentripper.apk`
           EOF
-          gh release create v0.5.0 opentripper-v0.5.0.apk opentripper.apk \
-            --title "OpenTripper v0.5.0 - Automotive Instrumentation & 4 Tabs" \
+          gh release create v0.5.1 opentripper-v0.5.1.apk opentripper.apk \
+            --title "OpenTripper v0.5.1 - PIN Validation & Forget Device" \
             --notes-file release_notes.md

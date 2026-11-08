@@ -95,6 +95,12 @@ public class MainActivity extends Activity implements TripperBridge.Listener, Di
     private CheckBox cbAutoConnect;
     private Button btnSyncClock;
     private Button btnCall;
+    private Button btnForgetDevice;
+
+    // Validação de PIN (Só exibido no primeiro pareamento)
+    private LinearLayout llPinValidationCard;
+    private EditText pinInput;
+    private Button btnSendPin;
 
     // Explorador de Ícones
     private TextView tvCurrentIcon;
@@ -169,6 +175,38 @@ public class MainActivity extends Activity implements TripperBridge.Listener, Di
         cbAutoConnect = findViewById(R.id.cbAutoConnect);
         btnSyncClock = findViewById(R.id.btnSyncClock);
         btnCall = findViewById(R.id.btnCall);
+        btnForgetDevice = findViewById(R.id.btnForgetDevice);
+
+        // Validação de PIN (Só exibido no pareamento)
+        llPinValidationCard = findViewById(R.id.llPinValidationCard);
+        pinInput = findViewById(R.id.pinInput);
+        btnSendPin = findViewById(R.id.btnSendPin);
+
+        btnSendPin.setOnClickListener(v -> {
+            String pin = pinInput.getText().toString().trim();
+            if (pin.length() >= 4) {
+                bridge.sendPin(pin);
+                pinInput.setText("");
+                llPinValidationCard.setVisibility(View.GONE);
+                Toast.makeText(this, "PIN enviado! Validando...", Toast.LENGTH_SHORT).show();
+            } else {
+                Toast.makeText(this, "Digite os dígitos do PIN", Toast.LENGTH_SHORT).show();
+            }
+        });
+
+        btnForgetDevice.setOnClickListener(v -> {
+            new AlertDialog.Builder(this)
+                .setTitle("Esquecer Tripper Pod")
+                .setMessage("Deseja redefinir o pareamento? Na próxima conexão, um novo código PIN surgirá no visor da moto.")
+                .setPositiveButton("Sim, esquecer", (dialog, which) -> {
+                    bridge.setPaired(false);
+                    bridge.disconnect();
+                    Toast.makeText(this, "Dispositivo esquecido com sucesso!", Toast.LENGTH_LONG).show();
+                    log("Dispositivo esquecido. Pareamento resetado.", "info");
+                })
+                .setNegativeButton("Cancelar", null)
+                .show();
+        });
 
         tvCurrentIcon = findViewById(R.id.tvCurrentIcon);
         btnPrevIcon = findViewById(R.id.btnPrevIcon);
@@ -457,11 +495,22 @@ public class MainActivity extends Activity implements TripperBridge.Listener, Di
     @Override
     public void onStateChanged(TripperBridge.State state) {
         switch (state) {
+            case WAITING_PIN:
+                statusDot.setBackgroundColor(COLOR_AMBER);
+                statusText.setText("DIGITE O PIN EXIBIDO NA MOTO");
+                if (llPinValidationCard != null) {
+                    llPinValidationCard.setVisibility(View.VISIBLE);
+                    pinInput.requestFocus();
+                }
+                break;
             case DISCONNECTED:
                 statusDot.setBackgroundColor(COLOR_RED);
                 statusText.setText("DESCONECTADO");
                 btnConnect.setText("Conectar ao Tripper Pod");
                 btnConnect.setEnabled(true);
+                if (llPinValidationCard != null) {
+                    llPinValidationCard.setVisibility(View.GONE);
+                }
                 if (coordinator != null) coordinator.onDisconnected();
                 break;
             case SCANNING:
@@ -481,6 +530,9 @@ public class MainActivity extends Activity implements TripperBridge.Listener, Di
                 statusText.setText("CONECTADO (RE_DISP)");
                 btnConnect.setText("Desconectar Pod");
                 btnConnect.setEnabled(true);
+                if (llPinValidationCard != null) {
+                    llPinValidationCard.setVisibility(View.GONE);
+                }
                 if (coordinator != null) coordinator.onConnected();
                 break;
         }
