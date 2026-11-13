@@ -194,33 +194,51 @@ O OpenTripper implementa a partir da versão **v0.3.1** um **Explorador Interati
 
 ## 8. Mapeamento de Manobras de Navegação (Google Maps & Waze)
 
-O OpenTripper converte em tempo real as notificações textuais emitidas pelos aplicativos de navegação para os opcodes vetoriais do hardware do Tripper Pod através do parser de heurísticas (`TurnParser`):
+O OpenTripper converte em tempo real as notificações textuais emitidas pelo Waze e Google Maps para os opcodes vetoriais do hardware do Tripper Pod através do analisador heurístico (`TurnByTurnService`):
 
-| Padrão Detectado no Texto da Notificação | Código de Manobra Hex | Ícone no Tripper Pod |
-|---|---|---|
-| `"rotatória"`, `"rotatoria"`, `"roundabout"` + `"1ª"` / `"1st"` / `"primeira"` | `0x0B` | Rotatória 1ª Saída |
-| `"rotatória"`, `"rotatoria"`, `"roundabout"` + `"2ª"` / `"2nd"` / `"segunda"` | `0x0C` | Rotatória 2ª Saída |
-| `"rotatória"`, `"rotatoria"`, `"roundabout"` + `"3ª"` / `"3rd"` / `"terceira"` | `0x0D` | Rotatória 3ª Saída |
-| `"rotatória"`, `"rotatoria"`, `"roundabout"` + `"4ª"` / `"4th"` / `"quarta"` | `0x0E` | Rotatória 4ª Saída |
-| `"rotatória"`, `"rotatoria"`, `"roundabout"` + `"5ª"` / `"5th"` / `"quinta"` | `0x0F` | Rotatória 5ª Saída |
-| `"rotatória"`, `"rotatoria"`, `"roundabout"` + `"6ª"` / `"6th"` / `"sexta"` | `0x10` | Rotatória 6ª Saída |
-| `"rotatória"`, `"rotatoria"`, `"roundabout"` + `"7ª"` / `"7th"` / `"sétima"` | `0x11` | Rotatória 7ª Saída |
-| `"rotatória"`, `"rotatoria"`, `"roundabout"` + `"8ª"` / `"8th"` / `"oitava"` | `0x12` | Rotatória 8ª Saída |
-| `"rotatória"`, `"rotatoria"`, `"roundabout"` + `"9ª"` / `"9th"` / `"nona"` | `0x13` | Rotatória 9ª Saída |
-| `"retorno"`, `"u-turn"` | `0x3D` | Retorno (U-Turn) |
-| `"curva fechada à esquerda"`, `"sharp left"` | `0x16` | Curva fechada à esquerda |
-| `"curva fechada à direita"`, `"sharp right"` | `0x17` | Curva fechada à direita |
-| `"curva suave à esquerda"`, `"slight left"`, `"mantenha-se à esquerda"` | `0x18` | Curva suave à esquerda |
-| `"curva suave à direita"`, `"slight right"`, `"mantenha-se à direita"` | `0x19` | Curva suave à direita |
-| `"vire à esquerda"`, `"esquerda"`, `"left"` | `0x14` | Virar à esquerda (90°) |
-| `"vire à direita"`, `"direita"`, `"right"` | `0x15` | Virar à direita (90°) |
-| `"saída"`, `"saida"`, `"exit"` + `"esquerda"` | `0x1A` | Saída de rodovia à esquerda |
-| `"saída"`, `"saida"`, `"exit"` + `"direita"` | `0x1B` | Saída de rodovia à direita |
-| `"bifurcação"`, `"bifurcacao"`, `"fork"` + `"esquerda"` | `0x1C` | Bifurcação à esquerda |
-| `"bifurcação"`, `"bifurcacao"`, `"fork"` + `"direita"` | `0x1D` | Bifurcação à direita |
-| `"destino"`, `"chegando"`, `"chegou"` | `0x01` | Destino alcançado |
-| `"siga"`, `"continue"`, `"em frente"` | `0x09` | Seguir em frente |
+| Padrão Detectado no Texto da Notificação | Código Hex | Seta Secundária [7] | Ícone no Tripper Pod |
+|---|---|---|---|
+| `"rotatória"` + `"1ª"` / `"1a"` / `"1st"` / `"saída 1"` | `0x32` | `0x32` | Rotatória 1ª Saída (Anti-horária / Brasil) |
+| `"rotatória"` + `"2ª"` / `"2a"` / `"2nd"` / `"saída 2"` | `0x33` | `0x33` | Rotatória 2ª Saída |
+| `"rotatória"` + `"3ª"` / `"3a"` / `"3rd"` / `"saída 3"` | `0x34` | `0x34` | Rotatória 3ª Saída |
+| `"rotatória"` + `"4ª"` / `"4a"` / `"4th"` / `"saída 4"` | `0x35` | `0x35` | Rotatória 4ª Saída |
+| `"rotatória"` + `"5ª"` / `"5a"` / `"5th"` / `"saída 5"` | `0x36` | `0x36` | Rotatória 5ª Saída |
+| `"rotatória"` + `"6ª"` / `"6a"` / `"6th"` / `"saída 6"` | `0x37` | `0x37` | Rotatória 6ª Saída |
+| `"rotatória"` + `"7ª"` / `"7a"` / `"7th"` / `"saída 7"` | `0x38` | `0x38` | Rotatória 7ª Saída |
+| `"rotatória"` + `"8ª"` / `"8a"` / `"8th"` / `"saída 8"` | `0x39` | `0x39` | Rotatória 8ª Saída |
+| `"rotatória"` + `"9ª"` / `"9a"` / `"9th"` / `"saída 9"` | `0x3A` | `0x3A` | Rotatória 9ª Saída |
+| `"rotatória"` genérica / base | `0x31` | `0x31` | Rotatória Base Anti-Horária |
+| `"retorno"`, `"u-turn"` | `0x3D` | `0x3D` | Retorno (Anti-Horário / Brasil) |
+| `"curva acentuada à esquerda"`, `"sharp left"` | `0x16` | `0x16` | Curva Acentuada à Esquerda |
+| `"curva acentuada à direita"`, `"sharp right"` | `0x17` | `0x17` | Curva Acentuada à Direita |
+| `"curva suave à esquerda"`, `"slight left"` | `0x18` | `0x18` | Curva Suave à Esquerda |
+| `"curva suave à direita"`, `"slight right"` | `0x19` | `0x19` | Curva Suave à Direita |
+| `"mantenha-se à esquerda"`, `"keep left"` | `0x28` | `0x2B` | Mantenha à Esquerda |
+| `"mantenha-se à direita"`, `"keep right"` | `0x27` | `0x2C` | Mantenha à Direita |
+| `"saída à esquerda"`, `"exit left"`, rampa | `0x2E` | `0x2B` | Saída de Rodovia à Esquerda |
+| `"saída à direita"`, `"exit right"`, rampa | `0x2D` | `0x2C` | Saída de Rodovia à Direita |
+| `"vire à esquerda"`, `"esquerda"`, `"left"` | `0x14` | `0x14` | Virar à Esquerda (90°) |
+| `"vire à direita"`, `"direita"`, `"right"` | `0x15` | `0x15` | Virar à Direita (90°) |
+| `"bifurcação à esquerda"`, `"fork left"` | `0x06` | `0x06` | Bifurcação à Esquerda |
+| `"bifurcação à direita"`, `"fork right"` | `0x05` | `0x05` | Bifurcação à Direita |
+| `"balsa"`, `"ferry"` | `0x3E` | `0x3E` | Balsa / Ferryboat |
+| `"destino"`, `"chegou"`, `"arrived"` | `0x00` | `0xFF` | Destino Alcançado (Bandeira) |
+| `"recalculando"`, `"re-routing"` | `0x1C` | `0xFF` | Recalculando Rota (Carregando) |
+| `"radar"`, `"fiscalização"`, `"speed camera"` | — | `0x3C` | Alerta de Radar na Seta Secundária |
+| `"siga"`, `"continue"`, `"em frente"` | `0x09` | `0x09` | Seguir em Frente (Cruzeiro) |
 
 ### Formatação de Distâncias no Barramento (`Bytes [3..5]`):
 * **Valores em Metros (até 999m):** `Bytes [3..4] = valor uint16`, `Byte [5] = 0x01`. Ex: `250 m` ➔ `0x00 0xFA 0x01`.
 * **Valores em Quilômetros (>= 1,0 km):** Convertido para décimos de quilômetro (`km * 10`). `Bytes [3..4] = uint16`, `Byte [5] = 0x02`. Ex: `3,5 km` ➔ `35` decikm ➔ `0x00 0x23 0x02`.
+
+### Intensidade Dinâmica por Proximidade (`Byte [6]`):
+O anel circular de LED em volta do visor acende progressivamente conforme a moto se aproxima da manobra:
+* **Distância > 95 m:** `0x00` (Aro neutro)
+* **Distância ≤ 95 m:** `0x10`
+* **Distância ≤ 70 m:** `0x20`
+* **Distância ≤ 45 m:** `0x30`
+* **Distância ≤ 20 m:** `0x40`
+* **Distância ≤ 10 m:** `0x50` (Aro totalmente iluminado)
+
+### Emulação do Velocímetro Digital (Modo Cruzeiro):
+Como o Tripper Pod foi concebido pela Royal Enfield estritamente como mostrador de navegação e relógio (sem tela nativa de velocímetro), o OpenTripper emula o velocímetro digital projetando a velocidade atual em `km/h` no campo principal de distância (`Byte [3..4]`) com a unidade inteira `m` (`Byte [5] = 0x01`) e a seta para cima (`0x09`). Na linha inferior (`Bytes [11..13]`), é projetado o hodômetro da viagem em km.

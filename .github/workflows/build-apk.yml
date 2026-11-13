@@ -33,7 +33,7 @@ jobs:
 
       - name: Renomear APK
         run: |
-          cp app/build/outputs/apk/debug/app-debug.apk opentripper-v0.5.1.apk
+          cp app/build/outputs/apk/debug/app-debug.apk opentripper-v0.5.2.apk
           cp app/build/outputs/apk/debug/app-debug.apk opentripper.apk
           ls -la opentripper*.apk
 
@@ -47,14 +47,16 @@ jobs:
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
-          gh release delete v0.5.1 --yes || true
+          gh release delete v0.5.2 --yes || true
           cat << 'EOF' > release_notes.md
-          ### Novidades do OpenTripper v0.5.1:
-          - 🔑 **Validação Automática de PIN:** Caixa de digitação de PIN no topo da tela quando o Tripper Pod solicita pareamento na primeira conexão.
-          - 🗑️ **Botão Esquecer Dispositivo:** Opção na aba Dispositivo para redefinir o pareamento quando quiser forçar um novo PIN.
-          - 🎨 **Identidade Visual Completa:** Navegação em 4 abas, mostrador circular automotivo e tema grafite (#0A0E17).
+          ### Novidades do OpenTripper v0.5.2:
+          - 🧭 **Correção do Travamento em 100m:** Eliminação do fallback incorreto que forçava 100 metros ao receber notificações em segundo plano do Waze/Maps ("Conduzindo", etc.).
+          - 🔄 **Navegação Curva a Curva Completa:** Parser avançado de manobras para Waze e Google Maps, com suporte a curvas suaves, acentuadas, saídas de rodovia, retornos e rotatórias anti-horárias (padrão Brasil 0x32-0x3A).
+          - 🏍️ **Velocímetro Digital Desbloqueado:** Correção do bloqueio que impedia atualização de km/h em tempo real ao expirar ou alternar a rota de navegação.
+          - 💡 **Anel de LED Progressivo:** Cálculo dinâmico de intensidade por aproximação (byte 6) conforme a moto chega perto da manobra.
+          - 🛰️ **Serviço de Segundo Plano Sincronizado:** Conexão direta com TripperService mantendo Bluetooth e GPS ativos com celular no bolso e tela apagada.
           - 🔗 **Link Permanente:** `https://github.com/OSolerHugo/opentripper/releases/latest/download/opentripper.apk`
           EOF
-          gh release create v0.5.1 opentripper-v0.5.1.apk opentripper.apk \
-            --title "OpenTripper v0.5.1 - PIN Validation & Forget Device" \
+          gh release create v0.5.2 opentripper-v0.5.2.apk opentripper.apk \
+            --title "OpenTripper v0.5.2 - Live Turn Navigation & Speedometer Fix" \
             --notes-file release_notes.md

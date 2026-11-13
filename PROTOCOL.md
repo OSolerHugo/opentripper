@@ -193,33 +193,51 @@ OpenTripper includes a built-in **Icon Explorer (Fuzzer)**:
 
 ## 8. Turn-by-Turn Maneuver Mapping (Google Maps & Waze)
 
-OpenTripper converts notification strings from navigation apps into Tripper Pod opcodes via its heuristic engine (`TurnParser`):
+OpenTripper converts notification strings from Waze and Google Maps into Tripper Pod opcodes via its heuristic engine (`TurnByTurnService`):
 
-| Pattern Detected in Notification Text | Hex Opcode | Displayed Icon |
-|---|---|---|
-| `"roundabout"`, `"rotatória"` + `"1st"` / `"1ª"` / `"primeira"` | `0x0B` | Roundabout - 1st Exit |
-| `"roundabout"`, `"rotatória"` + `"2nd"` / `"2ª"` / `"segunda"` | `0x0C` | Roundabout - 2nd Exit |
-| `"roundabout"`, `"rotatória"` + `"3rd"` / `"3ª"` / `"terceira"` | `0x0D` | Roundabout - 3rd Exit |
-| `"roundabout"`, `"rotatória"` + `"4th"` / `"4ª"` / `"quarta"` | `0x0E` | Roundabout - 4th Exit |
-| `"roundabout"`, `"rotatória"` + `"5th"` / `"5ª"` / `"quinta"` | `0x0F` | Roundabout - 5th Exit |
-| `"roundabout"`, `"rotatória"` + `"6th"` / `"6ª"` / `"sexta"` | `0x10` | Roundabout - 6th Exit |
-| `"roundabout"`, `"rotatória"` + `"7th"` / `"7ª"` / `"sétima"` | `0x11` | Roundabout - 7th Exit |
-| `"roundabout"`, `"rotatória"` + `"8th"` / `"8ª"` / `"oitava"` | `0x12` | Roundabout - 8th Exit |
-| `"roundabout"`, `"rotatória"` + `"9th"` / `"9ª"` / `"nona"` | `0x13` | Roundabout - 9th Exit |
-| `"u-turn"`, `"retorno"` | `0x3D` | U-Turn |
-| `"sharp left"`, `"curva fechada à esquerda"` | `0x16` | Sharp Left |
-| `"sharp right"`, `"curva fechada à direita"` | `0x17` | Sharp Right |
-| `"slight left"`, `"keep left"`, `"curva suave à esquerda"` | `0x18` | Slight Left |
-| `"slight right"`, `"keep right"`, `"curva suave à direita"` | `0x19` | Slight Right |
-| `"turn left"`, `"left"`, `"vire à esquerda"` | `0x14` | Turn Left (90°) |
-| `"turn right"`, `"right"`, `"vire à direita"` | `0x15` | Turn Right (90°) |
-| `"exit"` + `"left"`, `"saída à esquerda"` | `0x1A` | Highway exit left |
-| `"exit"` + `"right"`, `"saída à direita"` | `0x1B` | Highway exit right |
-| `"fork"` + `"left"`, `"bifurcação à esquerda"` | `0x1C` | Fork left |
-| `"fork"` + `"right"`, `"bifurcação à direita"` | `0x1D` | Fork right |
-| `"destination"`, `"arrived"`, `"chegou"` | `0x01` | Destination reached |
-| `"continue"`, `"head straight"`, `"siga em frente"` | `0x09` | Straight ahead |
+| Pattern Detected in Notification Text | Hex Opcode | Next Maneuver [7] | Displayed Icon |
+|---|---|---|---|
+| `"roundabout"` / `"rotatória"` + `"1st"` / `"1ª"` / `"exit 1"` | `0x32` | `0x32` | Roundabout - 1st Exit (Counter-Clockwise / Brazil) |
+| `"roundabout"` / `"rotatória"` + `"2nd"` / `"2ª"` / `"exit 2"` | `0x33` | `0x33` | Roundabout - 2nd Exit |
+| `"roundabout"` / `"rotatória"` + `"3rd"` / `"3ª"` / `"exit 3"` | `0x34` | `0x34` | Roundabout - 3rd Exit |
+| `"roundabout"` / `"rotatória"` + `"4th"` / `"4ª"` / `"exit 4"` | `0x35` | `0x35` | Roundabout - 4th Exit |
+| `"roundabout"` / `"rotatória"` + `"5th"` / `"5ª"` / `"exit 5"` | `0x36` | `0x36` | Roundabout - 5th Exit |
+| `"roundabout"` / `"rotatória"` + `"6th"` / `"6ª"` / `"exit 6"` | `0x37` | `0x37` | Roundabout - 6th Exit |
+| `"roundabout"` / `"rotatória"` + `"7th"` / `"7ª"` / `"exit 7"` | `0x38` | `0x38` | Roundabout - 7th Exit |
+| `"roundabout"` / `"rotatória"` + `"8th"` / `"8ª"` / `"exit 8"` | `0x39` | `0x39` | Roundabout - 8th Exit |
+| `"roundabout"` / `"rotatória"` + `"9th"` / `"9ª"` / `"exit 9"` | `0x3A` | `0x3A` | Roundabout - 9th Exit |
+| `"roundabout"` generic base | `0x31` | `0x31` | Roundabout Base (Counter-Clockwise) |
+| `"u-turn"`, `"retorno"` | `0x3D` | `0x3D` | U-Turn (Counter-Clockwise) |
+| `"sharp left"`, `"curva acentuada à esquerda"` | `0x16` | `0x16` | Sharp Left |
+| `"sharp right"`, `"curva acentuada à direita"` | `0x17` | `0x17` | Sharp Right |
+| `"slight left"`, `"curva suave à esquerda"` | `0x18` | `0x18` | Slight Left |
+| `"slight right"`, `"curva suave à direita"` | `0x19` | `0x19` | Slight Right |
+| `"keep left"`, `"mantenha à esquerda"` | `0x28` | `0x2B` | Keep Left |
+| `"keep right"`, `"mantenha à direita"` | `0x27` | `0x2C` | Keep Right |
+| `"exit left"`, `"saída à esquerda"`, ramp | `0x2E` | `0x2B` | Highway Exit Left |
+| `"exit right"`, `"saída à direita"`, ramp | `0x2D` | `0x2C` | Highway Exit Right |
+| `"turn left"`, `"left"`, `"vire à esquerda"` | `0x14` | `0x14` | Turn Left (90°) |
+| `"turn right"`, `"right"`, `"vire à direita"` | `0x15` | `0x15` | Turn Right (90°) |
+| `"fork left"`, `"bifurcação à esquerda"` | `0x06` | `0x06` | Fork Left |
+| `"fork right"`, `"bifurcação à direita"` | `0x05` | `0x05` | Fork Right |
+| `"ferry"`, `"balsa"` | `0x3E` | `0x3E` | Ferryboat |
+| `"destination"`, `"arrived"`, `"chegou"` | `0x00` | `0xFF` | Destination Reached (Checkered Flag) |
+| `"re-routing"`, `"recalculando"` | `0x1C` | `0xFF` | Re-routing (Loading Icon) |
+| `"radar"`, `"speed camera"` | — | `0x3C` | Speed Camera Alert (Small Arrow [7]) |
+| `"continue"`, `"head straight"`, `"siga em frente"` | `0x09` | `0x09` | Straight Ahead (Cruise) |
 
 ### Distance Encoding (`Bytes [3..5]`):
 * **Values in Meters (up to 999m):** `Bytes [3..4] = uint16 value`, `Byte [5] = 0x01`. (e.g. `250 m` ➔ `0x00 0xFA 0x01`).
 * **Values in Kilometers (>= 1.0 km):** Converted to tenths of a kilometer (`km * 10`). `Bytes [3..4] = uint16 value`, `Byte [5] = 0x02`. (e.g. `3.5 km` ➔ `35` tenths ➔ `0x00 0x23 0x02`).
+
+### Dynamic Proximity LED Ring (`Byte [6]`):
+The outer circular LED ring lights up in steps as the motorcycle approaches the maneuver:
+* **Distance > 95 m:** `0x00` (Ring unlit)
+* **Distance ≤ 95 m:** `0x10`
+* **Distance ≤ 70 m:** `0x20`
+* **Distance ≤ 45 m:** `0x30`
+* **Distance ≤ 20 m:** `0x40`
+* **Distance ≤ 10 m:** `0x50` (Ring fully lit)
+
+### Speedometer Emulation (Cruise Mode):
+Since the Tripper Pod firmware does not feature a native speedometer screen, OpenTripper emulates a digital speedometer by displaying current speed in `km/h` using the metric distance field (`Byte [3..4]`) with unit `m` (`Byte [5] = 0x01`) and the straight arrow (`0x09`). The bottom line (`Bytes [11..13]`) displays trip distance in kilometers.

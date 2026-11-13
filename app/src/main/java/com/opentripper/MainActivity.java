@@ -5,13 +5,16 @@ import android.app.Activity;
 import android.app.AlertDialog;
 import android.content.ClipData;
 import android.content.ClipboardManager;
+import android.content.ComponentName;
 import android.content.Context;
 import android.content.Intent;
+import android.content.ServiceConnection;
 import android.content.SharedPreferences;
 import android.content.pm.PackageManager;
 import android.graphics.Color;
 import android.os.Build;
 import android.os.Bundle;
+import android.os.IBinder;
 import android.provider.Settings;
 import android.text.method.ScrollingMovementMethod;
 import android.view.View;
@@ -225,10 +228,8 @@ public class MainActivity extends Activity implements TripperBridge.Listener, Di
         // 7. Carrega logs do disco
         loadLogsFromDisk();
 
-        // 8. Inicializa Bluetooth e Coordenador
-        bridge = new TripperBridge(this, this);
-        coordinator = new DisplayCoordinator(this, bridge);
-        coordinator.setMirrorListener(this);
+        // 8. Inicializa Bluetooth e Coordenador via TripperService ou localmente
+        initServiceAndBridge();
 
         btnConnect.setOnClickListener(v -> {
             if (bridge.isConnected()) {
@@ -471,6 +472,51 @@ public class MainActivity extends Activity implements TripperBridge.Listener, Di
         } catch (Exception ignored) {}
     }
 
+    private final ServiceConnection serviceConnection = new ServiceConnection() {
+        @Override
+        public void onServiceConnected(ComponentName name, IBinder service) {
+            TripperService.LocalBinder binder = (TripperService.LocalBinder) service;
+            TripperService s = binder.getService();
+            if (s != null) {
+                bridge = s.getBridge();
+                coordinator = s.getDisplayCoordinator();
+                s.setUiListener(MainActivity.this);
+                coordinator.setMirrorListener(MainActivity.this);
+                onStateChanged(bridge.getState());
+            }
+        }
+
+        @Override
+        public void onServiceDisconnected(ComponentName name) {
+        }
+    };
+
+    private void initServiceAndBridge() {
+        if (TripperService.getInstance() != null) {
+            bridge = TripperService.getInstance().getBridge();
+            coordinator = TripperService.getInstance().getDisplayCoordinator();
+            TripperService.getInstance().setUiListener(this);
+            coordinator.setMirrorListener(this);
+        } else {
+            bridge = new TripperBridge(this, this);
+            coordinator = new DisplayCoordinator(this, bridge);
+            coordinator.setMirrorListener(this);
+        }
+
+        try {
+            Intent serviceIntent = new Intent(this, TripperService.class);
+            bindService(serviceIntent, serviceConnection, Context.BIND_AUTO_CREATE);
+        } catch (Exception ignored) {}
+    }
+
+    @Override
+    protected void onDestroy() {
+        super.onDestroy();
+        try {
+            unbindService(serviceConnection);
+        } catch (Exception ignored) {}
+    }
+
     private void checkPermissionsAndConnect() {
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
             if (checkSelfPermission(Manifest.permission.BLUETOOTH_SCAN) != PackageManager.PERMISSION_GRANTED ||
@@ -489,6 +535,16 @@ public class MainActivity extends Activity implements TripperBridge.Listener, Di
                 return;
             }
         }
+
+        try {
+            Intent serviceIntent = new Intent(this, TripperService.class);
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+                startForegroundService(serviceIntent);
+            } else {
+                startService(serviceIntent);
+            }
+        } catch (Exception ignored) {}
+
         bridge.startConnect();
     }
 

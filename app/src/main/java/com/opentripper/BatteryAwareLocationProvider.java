@@ -39,7 +39,7 @@ public class BatteryAwareLocationProvider implements LocationListener {
     }
 
     /**
-     * Inicia a captura de satélite do GPS.
+     * Inicia a captura de satélite do GPS e provedores auxiliares.
      * Deve ser chamado SOMENTE após o Tripper Pod estar fisicamente conectado.
      */
     public synchronized boolean start() {
@@ -64,30 +64,62 @@ public class BatteryAwareLocationProvider implements LocationListener {
         }
 
         boolean gpsEnabled = false;
+        boolean networkEnabled = false;
         try {
             gpsEnabled = locationManager.isProviderEnabled(LocationManager.GPS_PROVIDER);
+            networkEnabled = locationManager.isProviderEnabled(LocationManager.NETWORK_PROVIDER);
         } catch (Exception ignored) {}
 
-        if (!gpsEnabled) {
+        if (!gpsEnabled && !networkEnabled) {
             if (listener != null) {
-                listener.onGpsStatusChanged(false, "GPS do aparelho desativado");
+                listener.onGpsStatusChanged(false, "Serviços de localização desativados");
             }
             return false;
         }
 
         try {
-            // Atualização a cada 1000ms (1 segundo) para coincidir com o refrescamento do visor
-            locationManager.requestLocationUpdates(
-                LocationManager.GPS_PROVIDER,
-                1000L,
-                0.0f,
-                this
-            );
-            isRunning = true;
-            if (listener != null) {
-                listener.onGpsStatusChanged(true, "Buscando satélites GPS...");
+            boolean registeredAny = false;
+            if (gpsEnabled) {
+                locationManager.requestLocationUpdates(
+                    LocationManager.GPS_PROVIDER,
+                    1000L,
+                    0.0f,
+                    this
+                );
+                registeredAny = true;
             }
-            return true;
+
+            if (networkEnabled) {
+                try {
+                    locationManager.requestLocationUpdates(
+                        LocationManager.NETWORK_PROVIDER,
+                        2000L,
+                        0.0f,
+                        this
+                    );
+                    registeredAny = true;
+                } catch (Exception ignored) {}
+            }
+
+            if (registeredAny) {
+                isRunning = true;
+                if (listener != null) {
+                    listener.onGpsStatusChanged(true, "GPS ativo (Rastreamento de Velocidade)");
+                }
+
+                // Tenta carregar última localização conhecida imediatamente
+                try {
+                    Location lastKnown = null;
+                    if (gpsEnabled) lastKnown = locationManager.getLastKnownLocation(LocationManager.GPS_PROVIDER);
+                    if (lastKnown == null && networkEnabled) lastKnown = locationManager.getLastKnownLocation(LocationManager.NETWORK_PROVIDER);
+                    if (lastKnown != null) {
+                        onLocationChanged(lastKnown);
+                    }
+                } catch (Exception ignored) {}
+
+                return true;
+            }
+            return false;
         } catch (SecurityException se) {
             if (listener != null) {
                 listener.onGpsStatusChanged(false, "Erro de segurança ao iniciar GPS");
@@ -137,7 +169,7 @@ public class BatteryAwareLocationProvider implements LocationListener {
         if (location.hasSpeed()) {
             speedKmH = Math.round(location.getSpeed() * 3.6f);
         } else if (lastLocation != null) {
-            // Fallback manual por delta de distância se o driver não reportar hasSpeed
+            // Fallback manual por delta de distância se o hardware não reportar hasSpeed
             long dtMs = location.getTime() - lastLocation.getTime();
             if (dtMs > 0 && dtMs < 5000) {
                 float distM = lastLocation.distanceTo(location);
@@ -145,13 +177,13 @@ public class BatteryAwareLocationProvider implements LocationListener {
             }
         }
 
-        // Filtra ruído de satélite parado (abaixo de 2 km/h considera parado)
+        // Filtra ruído de satélite parado (abaixo de 2 km/h considera 0 km/h)
         if (speedKmH < 2) {
             speedKmH = 0;
         }
 
         // 2. Acumula distância de viagem (apenas se tiver boa precisão para evitar saltos falsos)
-        if (lastLocation != null && location.hasAccuracy() && location.getAccuracy() < 25.0f) {
+        if (lastLocation != null && location.hasAccuracy() && location.getAccuracy() < 30.0f) {
             float deltaDist = lastLocation.distanceTo(location);
             if (deltaDist > 1.0f && deltaDist < 300.0f) { // descarta saltos anômalos
                 tripDistanceMeters += deltaDist;
@@ -171,8 +203,10 @@ public class BatteryAwareLocationProvider implements LocationListener {
     @Override public void onStatusChanged(String provider, int status, Bundle extras) {}
     @Override public void onProviderEnabled(String provider) {}
     @Override public void onProviderDisabled(String provider) {
-        if (LocationManager.GPS_PROVIDER.equals(provider)) {
-            stop();
+        if (LocationManager.GPS_PROVIDER.equals(provider) && isRunning) {
+            if (locationManager != null && !locationManager.isProviderEnabled(LocationManager.NETWORK_PROVIDER)) {
+                stop();
+            }
         }
     }
 }

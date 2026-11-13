@@ -23,6 +23,12 @@ public class TripperService extends Service implements TripperBridge.Listener {
     private static final String CHANNEL_ID = "opentripper_fg_channel";
     private static final int NOTIFICATION_ID = 1001;
 
+    private static TripperService instance = null;
+
+    public static TripperService getInstance() {
+        return instance;
+    }
+
     public class LocalBinder extends Binder {
         public TripperService getService() {
             return TripperService.this;
@@ -33,10 +39,12 @@ public class TripperService extends Service implements TripperBridge.Listener {
     private TripperBridge bridge;
     private DisplayCoordinator displayCoordinator;
     private SharedPreferences prefs;
+    private TripperBridge.Listener uiListener = null;
 
     @Override
     public void onCreate() {
         super.onCreate();
+        instance = this;
         prefs = getSharedPreferences("opentripper_prefs", Context.MODE_PRIVATE);
 
         bridge = new TripperBridge(this, this);
@@ -57,6 +65,13 @@ public class TripperService extends Service implements TripperBridge.Listener {
         return START_STICKY;
     }
 
+    public void setUiListener(TripperBridge.Listener listener) {
+        this.uiListener = listener;
+        if (this.uiListener != null && bridge != null) {
+            this.uiListener.onStateChanged(bridge.getState());
+        }
+    }
+
     public TripperBridge getBridge() {
         return bridge;
     }
@@ -73,6 +88,9 @@ public class TripperService extends Service implements TripperBridge.Listener {
     @Override
     public void onDestroy() {
         super.onDestroy();
+        if (instance == this) {
+            instance = null;
+        }
         if (displayCoordinator != null) {
             displayCoordinator.onDisconnected();
         }
@@ -99,9 +117,18 @@ public class TripperService extends Service implements TripperBridge.Listener {
                 nm.notify(NOTIFICATION_ID, buildForegroundNotification("🔴 Moto desconectada. Serviços pausados."));
             }
         }
+
+        if (uiListener != null) {
+            uiListener.onStateChanged(state);
+        }
     }
 
-    @Override public void onLog(String message, String type) {}
+    @Override
+    public void onLog(String message, String type) {
+        if (uiListener != null) {
+            uiListener.onLog(message, type);
+        }
+    }
 
     private void createNotificationChannel() {
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {

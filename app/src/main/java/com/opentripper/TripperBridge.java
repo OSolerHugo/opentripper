@@ -97,6 +97,7 @@ public class TripperBridge {
 
     public void setActiveDisplayPacket(byte[] pkt) {
         this.activeScreenPacket = pkt;
+        this.activeScreenDesc = "DISPLAY_ACTIVE";
         if (isConnected() && pkt != null) {
             enqueuePacket(pkt, "DISPLAY_COORDINATOR");
         }
@@ -370,6 +371,10 @@ public class TripperBridge {
 
     private synchronized void enqueuePacket(byte[] pkt, String desc) {
         if (bluetoothGatt == null || writeCharacteristic == null) return;
+        // Evita atraso acumulado em atualizações contínuas de velocímetro ou manobras
+        if (sendQueue.size() > 2 && (desc.contains("DISPLAY") || desc.contains("LOOP"))) {
+            sendQueue.poll();
+        }
         sendQueue.add(pkt);
         pumpQueue();
     }
