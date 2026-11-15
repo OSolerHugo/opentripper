@@ -155,6 +155,10 @@ public final class TripperProtocol {
     /**
      * Pacote da Bússola Digital 360° no Tripper Pod (CMD 0x10 0x11, tela 0x41)
      */
+    public static byte[] buildCompassPacket(byte direction) {
+        return buildCompassPacket(direction, false);
+    }
+
     public static byte[] buildCompassPacket(byte direction, boolean nightMode) {
         byte[] buf = new byte[18];
         buf[0] = 0x10;
