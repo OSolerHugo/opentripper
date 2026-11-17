@@ -440,7 +440,7 @@
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
                     android:layout_marginTop="14dp"
-                    android:text="Inicie uma rota no Google Maps ou no Waze com o celular no bolso. As conversões e saídas de rotatórias serão enviadas automaticamente para o display da moto."
+                    android:text="Inicie uma rota no Google Maps com o celular no bolso. As conversões, saídas de rotatórias e distâncias serão enviadas automaticamente para o display da moto.\n\nNota sobre o Waze: O aplicativo Waze não publica instruções curva a curva nas notificações do Android (utiliza apenas comandos de áudio e tela interna do app)."
                     android:textColor="#50607A"
                     android:textSize="11sp" />
             </LinearLayout>
@@ -695,104 +695,7 @@
                         android:textColor="#E8EDF3" />
                 </LinearLayout>
 
-                <!-- Explorador de Ícones -->
-                <LinearLayout
-                    android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
-                    android:layout_marginTop="12dp"
-                    android:background="@drawable/bg_card"
-                    android:padding="14dp"
-                    android:orientation="vertical">
-
-                    <TextView
-                        android:layout_width="wrap_content"
-                        android:layout_height="wrap_content"
-                        android:text="EXPLORADOR DE ÍCONES (FUZZER)"
-                        android:textColor="#00C2D9"
-                        android:textSize="10sp"
-                        android:textStyle="bold" />
-
-                    <TextView
-                        android:id="@+id/tvCurrentIcon"
-                        android:layout_width="match_parent"
-                        android:layout_height="wrap_content"
-                        android:layout_marginTop="6dp"
-                        android:background="#070A11"
-                        android:padding="8dp"
-                        android:text="Código: 0x00 - Destino (Chegada)"
-                        android:textColor="#E8EDF3"
-                        android:textSize="12sp"
-                        android:fontFamily="monospace" />
-
-                    <LinearLayout
-                        android:layout_width="match_parent"
-                        android:layout_height="wrap_content"
-                        android:layout_marginTop="8dp"
-                        android:orientation="horizontal">
-
-                        <Button
-                            android:id="@+id/btnPrevIcon"
-                            android:layout_width="0dp"
-                            android:layout_height="wrap_content"
-                            android:layout_weight="1"
-                            android:layout_marginEnd="4dp"
-                            android:text="◀ Ant" />
-
-                        <Button
-                            android:id="@+id/btnNextIcon"
-                            android:layout_width="0dp"
-                            android:layout_height="wrap_content"
-                            android:layout_weight="1"
-                            android:layout_marginStart="4dp"
-                            android:backgroundTint="#00C2D9"
-                            android:textColor="#0A0E17"
-                            android:text="Próx ▶" />
-                    </LinearLayout>
-
-                    <LinearLayout
-                        android:layout_width="match_parent"
-                        android:layout_height="wrap_content"
-                        android:layout_marginTop="4dp"
-                        android:orientation="horizontal">
-
-                        <Button
-                            android:id="@+id/btnPrev10"
-                            style="?android:attr/buttonStyleSmall"
-                            android:layout_width="0dp"
-                            android:layout_height="wrap_content"
-                            android:layout_weight="1"
-                            android:text="-10" />
-
-                        <Button
-                            android:id="@+id/btnNext10"
-                            style="?android:attr/buttonStyleSmall"
-                            android:layout_width="0dp"
-                            android:layout_height="wrap_content"
-                            android:layout_weight="1"
-                            android:text="+10" />
-
-                        <Button
-                            android:id="@+id/btnJumpUntested"
-                            style="?android:attr/buttonStyleSmall"
-                            android:layout_width="0dp"
-                            android:layout_height="wrap_content"
-                            android:layout_weight="2"
-                            android:text="Pular Ocultos" />
-                    </LinearLayout>
-
-                    <Button
-                        android:id="@+id/btnRecordDiscovery"
-                        style="?android:attr/buttonStyleSmall"
-                        android:layout_width="match_parent"
-                        android:layout_height="wrap_content"
-                        android:layout_marginTop="6dp"
-                        android:backgroundTint="#22C785"
-                        android:textColor="#0A0E17"
-                        android:textStyle="bold"
-                        android:text="📝 Anotar Descoberta" />
-                </LinearLayout>
-
-                <!-- Console de Logs -->
+                <!-- Console de Diagnóstico & Logs Sob Demanda -->
                 <LinearLayout
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
@@ -811,7 +714,7 @@
                             android:layout_width="0dp"
                             android:layout_height="wrap_content"
                             android:layout_weight="1"
-                            android:text="LOGS EM DISCO"
+                            android:text="DIAGNÓSTICO E LOGS"
                             android:textColor="#8B9BB4"
                             android:textSize="10sp"
                             android:textStyle="bold" />
@@ -838,16 +741,28 @@
                             android:text="🗑️" />
                     </LinearLayout>
 
+                    <Button
+                        android:id="@+id/btnGenerateLogs"
+                        style="?android:attr/buttonStyleSmall"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:layout_marginTop="8dp"
+                        android:backgroundTint="#00C2D9"
+                        android:text="📄 Gerar Relatório de Logs"
+                        android:textColor="#0A0E17"
+                        android:textStyle="bold" />
+
                     <TextView
                         android:id="@+id/logView"
                         android:layout_width="match_parent"
-                        android:layout_height="140dp"
+                        android:layout_height="130dp"
                         android:layout_marginTop="6dp"
                         android:background="#070A11"
                         android:fontFamily="monospace"
                         android:padding="6dp"
                         android:scrollbars="vertical"
-                        android:textColor="#22C785"
+                        android:text="Gravação contínua em disco desativada (economiza bateria e evita travamentos).\n\nToque no botão 'Gerar Relatório de Logs' acima quando desejar inspecionar o status do sistema."
+                        android:textColor="#8B9BB4"
                         android:textSize="10sp" />
                 </LinearLayout>
 

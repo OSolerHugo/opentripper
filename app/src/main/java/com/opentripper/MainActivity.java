@@ -110,18 +110,13 @@ public class MainActivity extends Activity implements TripperBridge.Listener, Di
     private EditText pinInput;
     private Button btnSendPin;
 
-    // Explorador de Ícones
-    private TextView tvCurrentIcon;
-    private Button btnPrevIcon, btnNextIcon, btnPrev10, btnNext10, btnJumpUntested, btnRecordDiscovery;
-    private int currentIconCode = 0x00;
-    private static final int[] UNTESTED_JUMPS = { 0x0B, 0x14, 0x23, 0x28, 0x40, 0x46, 0x60, 0x80 };
-    private int untestedJumpIdx = 0;
-
-    // Logs Persistentes
-    private Button btnCopyLogs, btnShareLogs, btnClearLogs;
+    // Diagnóstico e Logs Sob Demanda
+    private Button btnGenerateLogs, btnCopyLogs, btnShareLogs, btnClearLogs;
     private TextView logView;
+    private static final int MAX_MEMORY_LOGS = 30;
+    private final java.util.LinkedList<String> memoryLogs = new java.util.LinkedList<>();
+    private String currentReport = "";
 
-    private final StringBuilder logBuffer = new StringBuilder();
     private final SimpleDateFormat timeFormat = new SimpleDateFormat("HH:mm:ss", Locale.getDefault());
     private final SimpleDateFormat clockFormat = new SimpleDateFormat("HH:mm", Locale.getDefault());
 
@@ -237,24 +232,20 @@ public class MainActivity extends Activity implements TripperBridge.Listener, Di
                 .show();
         });
 
-        tvCurrentIcon = findViewById(R.id.tvCurrentIcon);
-        btnPrevIcon = findViewById(R.id.btnPrevIcon);
-        btnNextIcon = findViewById(R.id.btnNextIcon);
-        btnPrev10 = findViewById(R.id.btnPrev10);
-        btnNext10 = findViewById(R.id.btnNext10);
-        btnJumpUntested = findViewById(R.id.btnJumpUntested);
-        btnRecordDiscovery = findViewById(R.id.btnRecordDiscovery);
-
+        btnGenerateLogs = findViewById(R.id.btnGenerateLogs);
         btnCopyLogs = findViewById(R.id.btnCopyLogs);
         btnShareLogs = findViewById(R.id.btnShareLogs);
         btnClearLogs = findViewById(R.id.btnClearLogs);
         logView = findViewById(R.id.logView);
         logView.setMovementMethod(new ScrollingMovementMethod());
 
-        // 7. Carrega logs do disco
-        loadLogsFromDisk();
+        // Limpa arquivos de log antigos do disco para liberar espaço e cache
+        try {
+            File oldLogFile = new File(getFilesDir(), LOG_FILE_NAME);
+            if (oldLogFile.exists()) oldLogFile.delete();
+        } catch (Exception ignored) {}
 
-        // 8. Inicializa Bluetooth e Coordenador via TripperService ou localmente
+        // Inicializa Bluetooth e Coordenador via TripperService ou localmente
         initServiceAndBridge();
 
         btnConnect.setOnClickListener(v -> {
@@ -295,7 +286,6 @@ public class MainActivity extends Activity implements TripperBridge.Listener, Di
             log("Overlay de chamada enviado", "tx");
         });
 
-        setupExplorerControls();
         setupLogControls();
 
         // Se auto-conectar estiver ativo, inicia a busca
@@ -405,119 +395,63 @@ public class MainActivity extends Activity implements TripperBridge.Listener, Di
         tvCruiseTrip.setText(tvDashTrip.getText().toString());
     }
 
-    private void setupExplorerControls() {
-        updateIconDisplay();
-
-        btnNextIcon.setOnClickListener(v -> {
-            currentIconCode = (currentIconCode + 1) & 0xFF;
-            updateIconDisplay();
-            bridge.setExplorerIcon(currentIconCode);
-        });
-
-        btnPrevIcon.setOnClickListener(v -> {
-            currentIconCode = (currentIconCode - 1 + 256) & 0xFF;
-            updateIconDisplay();
-            bridge.setExplorerIcon(currentIconCode);
-        });
-
-        btnNext10.setOnClickListener(v -> {
-            currentIconCode = (currentIconCode + 10) & 0xFF;
-            updateIconDisplay();
-            bridge.setExplorerIcon(currentIconCode);
-        });
-
-        btnPrev10.setOnClickListener(v -> {
-            currentIconCode = (currentIconCode - 10 + 256) & 0xFF;
-            updateIconDisplay();
-            bridge.setExplorerIcon(currentIconCode);
-        });
-
-        btnJumpUntested.setOnClickListener(v -> {
-            currentIconCode = UNTESTED_JUMPS[untestedJumpIdx % UNTESTED_JUMPS.length];
-            untestedJumpIdx++;
-            updateIconDisplay();
-            bridge.setExplorerIcon(currentIconCode);
-        });
-
-        btnRecordDiscovery.setOnClickListener(v -> promptRecordDiscovery());
-    }
-
-    private void updateIconDisplay() {
-        String name = TripperProtocol.getIconName(currentIconCode);
-        tvCurrentIcon.setText(String.format(Locale.US, "Código: 0x%02X (%d) - %s", currentIconCode, currentIconCode, name));
-    }
-
-    private void promptRecordDiscovery() {
-        AlertDialog.Builder builder = new AlertDialog.Builder(this);
-        builder.setTitle(String.format(Locale.US, "Anotar Ícone 0x%02X", currentIconCode));
-        builder.setMessage("O que apareceu no visor da moto?");
-
-        final EditText input = new EditText(this);
-        input.setHint("Ex: Seta curva suave, Rotatória 3ª saída...");
-        builder.setView(input);
-
-        builder.setPositiveButton("Gravar no Log", (dialog, which) -> {
-            String desc = input.getText().toString().trim();
-            if (!desc.isEmpty()) {
-                String record = String.format(Locale.US, "🌟 [DESCOBERTA] Ícone 0x%02X: %s", currentIconCode, desc);
-                log(record, "info");
-                Toast.makeText(this, "Descoberta salva no histórico!", Toast.LENGTH_SHORT).show();
-            }
-        });
-        builder.setNegativeButton("Cancelar", null);
-        builder.show();
-    }
-
     private void setupLogControls() {
+        btnGenerateLogs.setOnClickListener(v -> {
+            generateSystemReport();
+            Toast.makeText(this, "Relatório de logs gerado!", Toast.LENGTH_SHORT).show();
+        });
+
         btnCopyLogs.setOnClickListener(v -> {
+            String textToCopy = currentReport.isEmpty() ? generateReportString() : currentReport;
             ClipboardManager clipboard = (ClipboardManager) getSystemService(Context.CLIPBOARD_SERVICE);
-            ClipData clip = ClipData.newPlainText("OpenTripper Logs", logBuffer.toString());
+            ClipData clip = ClipData.newPlainText("OpenTripper Logs", textToCopy);
             clipboard.setPrimaryClip(clip);
             Toast.makeText(this, "Logs copiados!", Toast.LENGTH_SHORT).show();
         });
 
         btnShareLogs.setOnClickListener(v -> {
+            String textToShare = currentReport.isEmpty() ? generateReportString() : currentReport;
             Intent shareIntent = new Intent(Intent.ACTION_SEND);
             shareIntent.setType("text/plain");
             shareIntent.putExtra(Intent.EXTRA_SUBJECT, "OpenTripper Logs");
-            shareIntent.putExtra(Intent.EXTRA_TEXT, logBuffer.toString());
+            shareIntent.putExtra(Intent.EXTRA_TEXT, textToShare);
             startActivity(Intent.createChooser(shareIntent, "Enviar logs via..."));
         });
 
         btnClearLogs.setOnClickListener(v -> {
-            new AlertDialog.Builder(this)
-                .setTitle("Limpar Histórico")
-                .setMessage("Deseja apagar todos os logs gravados?")
-                .setPositiveButton("Sim, limpar", (dialog, which) -> {
-                    logBuffer.setLength(0);
-                    logView.setText("");
-                    File file = new File(getFilesDir(), LOG_FILE_NAME);
-                    if (file.exists()) file.delete();
-                    log("Histórico de logs limpo.", "info");
-                })
-                .setNegativeButton("Cancelar", null)
-                .show();
+            synchronized (memoryLogs) {
+                memoryLogs.clear();
+            }
+            currentReport = "";
+            logView.setText("Logs limpos da memória.\nToque em 'Gerar Relatório de Logs' para atualizar.");
+            Toast.makeText(this, "Histórico limpo!", Toast.LENGTH_SHORT).show();
         });
     }
 
-    private synchronized void loadLogsFromDisk() {
-        File file = new File(getFilesDir(), LOG_FILE_NAME);
-        if (!file.exists()) return;
-
-        try (BufferedReader reader = new BufferedReader(new InputStreamReader(new FileInputStream(file)))) {
-            String line;
-            while ((line = reader.readLine()) != null) {
-                logBuffer.append(line).append("\n");
+    private String generateReportString() {
+        StringBuilder sb = new StringBuilder();
+        sb.append("=== OpenTripper v0.5.4 Relatório de Diagnóstico ===\n");
+        sb.append("Data/Hora: ").append(new Date().toString()).append("\n");
+        sb.append("Status BLE: ").append(bridge != null ? bridge.getState().name() : "N/A").append("\n");
+        sb.append("Leitor Notificações: ").append(TurnByTurnService.isServiceConnected ? "CONECTADO" : "DESCONECTADO").append("\n");
+        sb.append("Permissão Notificações: ").append(TurnByTurnService.isNotificationAccessGranted(this) ? "CONCEDIDA" : "NEGADA").append("\n");
+        sb.append("Última Notificação Interceptada: ").append(TurnByTurnService.lastNotificationSummary).append("\n\n");
+        sb.append("--- Últimos 30 Eventos do Sistema ---\n");
+        synchronized (memoryLogs) {
+            if (memoryLogs.isEmpty()) {
+                sb.append("(Nenhum evento registrado recentemente)\n");
+            } else {
+                for (String logLine : memoryLogs) {
+                    sb.append(logLine).append("\n");
+                }
             }
-            logView.setText(logBuffer.toString());
-        } catch (Exception ignored) {}
+        }
+        return sb.toString();
     }
 
-    private synchronized void appendLogToDisk(String formattedLine) {
-        File file = new File(getFilesDir(), LOG_FILE_NAME);
-        try (FileOutputStream fos = new FileOutputStream(file, true)) {
-            fos.write((formattedLine + "\n").getBytes());
-        } catch (Exception ignored) {}
+    private void generateSystemReport() {
+        currentReport = generateReportString();
+        logView.setText(currentReport);
     }
 
     private final ServiceConnection serviceConnection = new ServiceConnection() {
@@ -646,13 +580,12 @@ public class MainActivity extends Activity implements TripperBridge.Listener, Di
     public void onLog(String message, String type) {
         String time = timeFormat.format(new Date());
         String line = "[" + time + "] " + message;
-        logBuffer.append(line).append("\n");
-        appendLogToDisk(line);
-
-        logView.setText(logBuffer.toString());
-        final int scrollAmount = logView.getLayout() != null ?
-                logView.getLayout().getLineTop(logView.getLineCount()) - logView.getHeight() : 0;
-        if (scrollAmount > 0) logView.scrollTo(0, scrollAmount);
+        synchronized (memoryLogs) {
+            memoryLogs.add(line);
+            if (memoryLogs.size() > MAX_MEMORY_LOGS) {
+                memoryLogs.removeFirst();
+            }
+        }
     }
 
     private void log(String msg, String type) {

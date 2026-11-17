@@ -33,7 +33,7 @@ jobs:
 
       - name: Renomear APK
         run: |
-          cp app/build/outputs/apk/debug/app-debug.apk opentripper-v0.5.3.apk
+          cp app/build/outputs/apk/debug/app-debug.apk opentripper-v0.5.4.apk
           cp app/build/outputs/apk/debug/app-debug.apk opentripper.apk
           ls -la opentripper*.apk
 
@@ -47,17 +47,15 @@ jobs:
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
-          gh release delete v0.5.3 --yes || true
+          gh release delete v0.5.4 --yes || true
           cat << 'EOF' > release_notes.md
-          ### Novidades do OpenTripper v0.5.3:
-          - 🛠️ **Correção Crítica no Parser do Maps e Waze:** Removido o filtro rígido que descartava notificações válidas contendo mensagens de status do sistema ("GPS conectado" do Google Maps ou "em segundo plano" do Waze).
-          - 🔄 **Reconexão Automática do Leitor de Notificações:** Mecanismo ativo com `requestRebind()` e reset de componente para resolver o bug clássico do Android que desvincula o `NotificationListenerService` silenciosamente após atualização de APK.
-          - 🔓 **Suporte a Configurações Restritas (Android 13, 14 e 15):** Botão de atalho para liberar configurações restritas em APKs instalados fora da Play Store.
-          - 🧪 **Botão de Teste e Simulação de Manobras:** Permite testar manobras (500m curva à direita, rotatória 2ª saída, curva acentuada 35m com anel de LED e bandeira de chegada) no painel da moto diretamente na garagem sem precisar rodar.
-          - ⏱️ **Estabilidade de Rota (Timeout de 2 minutos):** As manobras agora permanecem firmes na tela mesmo durante semáforos vermelhos e longos trechos retos sem novas notificações.
-          - 📋 **Diagnóstico e Logs em Tempo Real:** Status visual de conexão com o Android e log ao vivo de notificações recebidas na aba Navegação.
+          ### Novidades do OpenTripper v0.5.4:
+          - ⚡ **Zero Travamentos & Fim do Alerta de Cache:** Desativada completamente a escrita contínua de logs em disco e o reprocessamento pesado na interface. O app agora roda leve e fluido com celular no bolso.
+          - 📄 **Logs Sob Demanda:** Logs agora são gerados apenas se você tocar no botão "📄 Gerar Relatório de Logs", com buffer em memória limitado a 30 eventos.
+          - 🧹 **Remoção do Explorador de Ícones:** Tela de Dispositivo limpa e simplificada, focada apenas na conexão, sincronização e configurações úteis.
+          - 🗺️ **Google Maps 100% Funcional:** Navegação curva a curva nativa testada e aprovada no painel da Royal Enfield Hunter 350.
           - 🔗 **Download Direto:** `https://github.com/OSolerHugo/opentripper/releases/latest/download/opentripper.apk`
           EOF
-          gh release create v0.5.3 opentripper-v0.5.3.apk opentripper.apk \
-            --title "OpenTripper v0.5.3 - Turn-by-Turn Interceptor & Rebind Fix" \
+          gh release create v0.5.4 opentripper-v0.5.4.apk opentripper.apk \
+            --title "OpenTripper v0.5.4 - Performance Optimization & UI Cleanup" \
             --notes-file release_notes.md
