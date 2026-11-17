@@ -3,6 +3,8 @@ package com.opentripper;
 import android.app.Notification;
 import android.content.ComponentName;
 import android.content.Context;
+import android.content.pm.PackageManager;
+import android.os.Build;
 import android.os.Bundle;
 import android.provider.Settings;
 import android.service.notification.NotificationListenerService;
@@ -55,18 +57,24 @@ public class TurnByTurnService extends NotificationListenerService {
     private static NavListener activeListener = null;
     private static NavStep lastActiveStep = null;
 
+    // Diagnósticos em Tempo Real
+    public static boolean isServiceConnected = false;
+    public static String lastNotificationSummary = "Nenhuma notificação capturada ainda";
+    public static long lastNotificationTimestamp = 0;
+    private static int simulationStepIndex = 0;
+
     public static void setNavListener(NavListener listener) {
         activeListener = listener;
         if (activeListener != null && lastActiveStep != null) {
-            // Entrega imediatamente a última instrução conhecida se ainda for recente (< 15s)
-            if (System.currentTimeMillis() - lastActiveStep.timestamp < 15000) {
+            // Entrega imediatamente a última instrução conhecida se ainda for recente (< 2 min)
+            if (System.currentTimeMillis() - lastActiveStep.timestamp < 120000) {
                 activeListener.onNavStepUpdated(lastActiveStep);
             }
         }
     }
 
     public static NavStep getLastActiveStep() {
-        if (lastActiveStep != null && (System.currentTimeMillis() - lastActiveStep.timestamp < 15000)) {
+        if (lastActiveStep != null && (System.currentTimeMillis() - lastActiveStep.timestamp < 120000)) {
             return lastActiveStep;
         }
         return null;
@@ -74,6 +82,7 @@ public class TurnByTurnService extends NotificationListenerService {
 
     /** Verifica se o usuário concedeu permissão de leitura de notificações para o OpenTripper */
     public static boolean isNotificationAccessGranted(Context context) {
+        if (context == null) return false;
         String pkgName = context.getPackageName();
         String flat = Settings.Secure.getString(context.getContentResolver(), "enabled_notification_listeners");
         if (!TextUtils.isEmpty(flat)) {
@@ -88,9 +97,64 @@ public class TurnByTurnService extends NotificationListenerService {
         return false;
     }
 
+    /**
+     * Força a reconexão do NotificationListenerService junto ao Android OS.
+     * Resolve o bug crítico do Android que desvincula o serviço silenciosamente após updates/instalações de APK.
+     */
+    public static void ensureServiceBound(Context context) {
+        if (context == null) return;
+        if (!isNotificationAccessGranted(context)) return;
+
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.N) {
+            try {
+                requestRebind(new ComponentName(context, TurnByTurnService.class));
+                TripperBridge.logStatic("🔄 Solicitado requestRebind() do Leitor de Notificações", "sys");
+            } catch (Throwable ignored) {}
+        }
+
+        try {
+            PackageManager pm = context.getPackageManager();
+            ComponentName cn = new ComponentName(context, TurnByTurnService.class);
+            pm.setComponentEnabledSetting(cn, PackageManager.COMPONENT_ENABLED_STATE_DISABLED, PackageManager.DONT_KILL_APP);
+            pm.setComponentEnabledSetting(cn, PackageManager.COMPONENT_ENABLED_STATE_ENABLED, PackageManager.DONT_KILL_APP);
+        } catch (Throwable ignored) {}
+    }
+
+    @Override
+    public void onListenerConnected() {
+        super.onListenerConnected();
+        isServiceConnected = true;
+        TripperBridge.logStatic("🟢 [TurnByTurn] Serviço conectado e ouvindo o Android!", "sys");
+
+        // Lê imediatamente notificações ativas caso o Maps ou Waze já estejam navegando
+        try {
+            StatusBarNotification[] active = getActiveNotifications();
+            if (active != null) {
+                for (StatusBarNotification sbn : active) {
+                    if (sbn != null && ("com.google.android.apps.maps".equals(sbn.getPackageName()) || "com.waze".equals(sbn.getPackageName()))) {
+                        onNotificationPosted(sbn);
+                    }
+                }
+            }
+        } catch (Throwable ignored) {}
+    }
+
+    @Override
+    public void onListenerDisconnected() {
+        super.onListenerDisconnected();
+        isServiceConnected = false;
+        TripperBridge.logStatic("⚠️ [TurnByTurn] Serviço desvinculado pelo Android! Tentando reconectar...", "err");
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.N) {
+            try {
+                requestRebind(new ComponentName(this, TurnByTurnService.class));
+            } catch (Throwable ignored) {}
+        }
+    }
+
     @Override
     public void onNotificationPosted(StatusBarNotification sbn) {
         if (sbn == null) return;
+        isServiceConnected = true;
 
         String pkg = sbn.getPackageName();
         if (!"com.google.android.apps.maps".equals(pkg) && !"com.waze".equals(pkg)) {
@@ -102,27 +166,53 @@ public class TurnByTurnService extends NotificationListenerService {
 
         Bundle extras = notification.extras;
 
+        // Extrai todos os campos padrão
         String title = getExtraString(extras, Notification.EXTRA_TITLE, "android.title.big");
         String text = getExtraString(extras, Notification.EXTRA_TEXT, Notification.EXTRA_BIG_TEXT);
         String subText = getExtraString(extras, Notification.EXTRA_SUB_TEXT, Notification.EXTRA_INFO_TEXT);
         String summary = getExtraString(extras, Notification.EXTRA_SUMMARY_TEXT);
         String ticker = notification.tickerText != null ? notification.tickerText.toString() : "";
 
+        // Coleta textos extras dinâmicos (evita perda de dados de novas versões do Maps/Waze)
+        StringBuilder allExtrasBuilder = new StringBuilder();
+        try {
+            for (String key : extras.keySet()) {
+                Object val = extras.get(key);
+                if (val instanceof CharSequence) {
+                    allExtrasBuilder.append(val.toString()).append(" ");
+                } else if (val instanceof CharSequence[]) {
+                    for (CharSequence cs : (CharSequence[]) val) {
+                        if (cs != null) allExtrasBuilder.append(cs.toString()).append(" ");
+                    }
+                }
+            }
+        } catch (Throwable ignored) {}
+
+        String appName = pkg.contains("waze") ? "Waze" : "Maps";
+        lastNotificationTimestamp = System.currentTimeMillis();
+        lastNotificationSummary = "[" + appName + "] " + (!title.isEmpty() ? title : "") + (!text.isEmpty() ? " | " + text : "");
+        TripperBridge.logStatic("[NAV] Interceptado " + lastNotificationSummary, "info");
+
         // Se a notificação indicar término de trajeto
-        if (isNavigationEnded(title, text, subText)) {
+        if (isNavigationEnded(title, text, subText, allExtrasBuilder.toString())) {
             lastActiveStep = null;
+            TripperBridge.logStatic("[NAV] Trajeto finalizado no " + appName, "sys");
             if (activeListener != null) {
                 activeListener.onNavigationFinished();
             }
             return;
         }
 
-        NavStep step = parseNavigation(title, text, subText, summary, ticker);
+        NavStep step = parseNavigation(title, text, subText, summary, ticker, allExtrasBuilder.toString());
         if (step != null) {
             lastActiveStep = step;
+            String unitStr = step.distanceUnit == 0x02 ? String.format("%.1f km", step.distanceValue / 10.0f) : (step.distanceValue + " m");
+            TripperBridge.logStatic("[NAV] ✅ Manobra: " + TripperProtocol.getIconName(step.iconCode) + " a " + unitStr, "tx");
             if (activeListener != null) {
                 activeListener.onNavStepUpdated(step);
             }
+        } else {
+            TripperBridge.logStatic("[NAV] ℹ️ Ignorado (sem manobra/distância ativa)", "sys");
         }
     }
 
@@ -132,6 +222,7 @@ public class TurnByTurnService extends NotificationListenerService {
         String pkg = sbn.getPackageName();
         if ("com.google.android.apps.maps".equals(pkg) || "com.waze".equals(pkg)) {
             lastActiveStep = null;
+            TripperBridge.logStatic("[NAV] Notificação de navegação removida pelo " + (pkg.contains("waze") ? "Waze" : "Maps"), "sys");
             if (activeListener != null) {
                 activeListener.onNavigationFinished();
             }
@@ -148,8 +239,8 @@ public class TurnByTurnService extends NotificationListenerService {
         return "";
     }
 
-    private static boolean isNavigationEnded(String title, String text, String subText) {
-        String combined = (title + " " + text + " " + subText).toLowerCase();
+    private static boolean isNavigationEnded(String title, String text, String subText, String extrasText) {
+        String combined = (title + " " + text + " " + subText + " " + extrasText).toLowerCase();
         return combined.contains("navegação concluída") ||
                combined.contains("navegação finalizada") ||
                combined.contains("rota concluída") ||
@@ -158,33 +249,29 @@ public class TurnByTurnService extends NotificationListenerService {
                combined.contains("navigation ended");
     }
 
+    public static NavStep parseNavigation(String title, String text, String subText, String summary, String ticker) {
+        return parseNavigation(title, text, subText, summary, ticker, "");
+    }
+
     /**
      * Decodificador Inteligente e Resiliente de Notificações do Waze e Google Maps.
-     * 
-     * Regra de Ouro: NUNCA gera passo arbitrário de 100m se não houver distância real.
-     * Retorna null se a notificação for apenas informativa de segundo plano (ex: "Waze - Conduzindo").
      */
-    public static NavStep parseNavigation(String title, String text, String subText, String summary, String ticker) {
-        String fullPrompt = (title + " " + text + " " + subText + " " + summary + " " + ticker).toLowerCase();
+    public static NavStep parseNavigation(String title, String text, String subText, String summary, String ticker, String extrasText) {
+        String fullPrompt = (title + " " + text + " " + subText + " " + summary + " " + ticker + " " + extrasText).toLowerCase();
 
-        // 1. Filtra avisos genéricos de segundo plano que não são manobra ativa
+        // 1. Filtra APENAS notificações explicitamente sem destino
         if (fullPrompt.contains("sem destino") ||
             fullPrompt.contains("sem rota") ||
-            fullPrompt.contains("conduzindo sem destino") ||
-            (fullPrompt.contains("conduzindo") && !fullPrompt.contains("m") && !fullPrompt.contains("km")) ||
-            fullPrompt.contains("waze está em execução") ||
-            fullPrompt.contains("em segundo plano") ||
-            fullPrompt.contains("compartilhando local") ||
-            fullPrompt.contains("gps conectado")) {
+            fullPrompt.contains("conduzindo sem destino")) {
             return null;
         }
 
-        // 2. Extração da Distância da Manobra
+        // 2. Extração da Distância da Manobra (ignora sufixos de velocidade como km/h)
         int distanceValue = -1;
         int distanceUnit = 0x01; // metros
         int distanceMeters = -1;
 
-        Pattern distPattern = Pattern.compile("(\\d+([.,]\\d+)?)\\s*(m|km|metros|metro|quilômetros|quilômetro|ft|feet|pés|pé|mi|milhas|milha)\\b", Pattern.CASE_INSENSITIVE);
+        Pattern distPattern = Pattern.compile("(\\d+([.,]\\d+)?)\\s*(m|km|metros|metro|quilômetros|quilômetro|ft|feet|pés|pé|mi|milhas|milha)\\b(?!/h)", Pattern.CASE_INSENSITIVE);
         Matcher distMatcher = distPattern.matcher(fullPrompt);
 
         if (distMatcher.find()) {
@@ -216,8 +303,7 @@ public class TurnByTurnService extends NotificationListenerService {
         boolean isArrived = fullPrompt.contains("chegou") || fullPrompt.contains("destino") || fullPrompt.contains("arrived");
         boolean isRerouting = fullPrompt.contains("recalcul") || fullPrompt.contains("re-rout");
 
-        // REGRA CRÍTICA: Se não achou distância e não é chegada/recálculo, NÃO é uma manobra válida!
-        // Retornar null impede o travamento na tela de 100m.
+        // REGRA DE OURO: Se não achou distância e não é chegada/recálculo, NÃO é uma manobra ativa
         if (distanceValue < 0 && !isArrived && !isRerouting) {
             return null;
         }
@@ -232,7 +318,7 @@ public class TurnByTurnService extends NotificationListenerService {
         int etaHour = 0xFF;
         int etaMin = 0xFF;
         Pattern etaPattern = Pattern.compile("\\b([0-2]?[0-9]):([0-5][0-9])\\b");
-        Matcher etaMatcher = etaPattern.matcher(subText + " " + text + " " + summary + " " + title);
+        Matcher etaMatcher = etaPattern.matcher(subText + " " + text + " " + summary + " " + title + " " + extrasText);
         if (etaMatcher.find()) {
             try {
                 etaHour = Integer.parseInt(etaMatcher.group(1));
@@ -241,11 +327,11 @@ public class TurnByTurnService extends NotificationListenerService {
         }
 
         // 5. Mapeamento Completo de Ícone de Manobra (WazeTripper / Hunter 350)
-        int iconCode = TripperProtocol.MANEUVER_STRAIGHT; // 0x09 padrão se houver distância em linha reta
+        int iconCode = TripperProtocol.MANEUVER_STRAIGHT; // 0x09 padrão
         int nextIconCode = TripperProtocol.NEXT_NONE;     // 0xFF
 
         // Alerta de Radar na via
-        if (fullPrompt.contains("radar") || fullPrompt.contains("fiscalização") || fullPrompt.contains("speed camera")) {
+        if (fullPrompt.contains("radar") || fullPrompt.contains("fiscalização") || fullPrompt.contains("fiscalizacao") || fullPrompt.contains("speed camera")) {
             nextIconCode = TripperProtocol.NEXT_RADAR; // 0x3C seta pequena
         }
 
@@ -259,7 +345,7 @@ public class TurnByTurnService extends NotificationListenerService {
             }
         } else if (isRerouting) {
             iconCode = TripperProtocol.MANEUVER_RE_ROUTING; // 0x1C
-        } else if (fullPrompt.contains("rotat") || fullPrompt.contains("roundabout")) {
+        } else if (fullPrompt.contains("rotat") || fullPrompt.contains("roundabout") || fullPrompt.contains("rótula") || fullPrompt.contains("rotula")) {
             // Rotatórias Anti-Horárias (Trânsito Brasil / Mão Direita: 0x32 a 0x3A)
             if (fullPrompt.contains("1ª") || fullPrompt.contains("1a") || fullPrompt.contains("primeira") || fullPrompt.contains("1st") || fullPrompt.contains("saída 1") || fullPrompt.contains("exit 1")) {
                 iconCode = TripperProtocol.MANEUVER_ROUNDABOUT_EXIT_1; // 0x32
@@ -287,12 +373,12 @@ public class TurnByTurnService extends NotificationListenerService {
         } else if (fullPrompt.contains("esquerda") || fullPrompt.contains("left")) {
             if (fullPrompt.contains("acentuada") || fullPrompt.contains("fechada") || fullPrompt.contains("sharp")) {
                 iconCode = TripperProtocol.MANEUVER_SHARP_LEFT; // 0x16
-            } else if (fullPrompt.contains("suave") || fullPrompt.contains("slight")) {
+            } else if (fullPrompt.contains("suave") || fullPrompt.contains("slight") || fullPrompt.contains("leve")) {
                 iconCode = TripperProtocol.MANEUVER_SLIGHT_LEFT; // 0x18
             } else if (fullPrompt.contains("saída") || fullPrompt.contains("saida") || fullPrompt.contains("exit") || fullPrompt.contains("rampa")) {
                 iconCode = TripperProtocol.MANEUVER_EXIT_LEFT; // 0x2E
                 if (nextIconCode == TripperProtocol.NEXT_NONE) nextIconCode = TripperProtocol.NEXT_KEEP_LEFT;
-            } else if (fullPrompt.contains("mantenha") || fullPrompt.contains("keep") || fullPrompt.contains("faixa")) {
+            } else if (fullPrompt.contains("mantenha") || fullPrompt.contains("keep") || fullPrompt.contains("faixa") || fullPrompt.contains("bifurcação")) {
                 iconCode = TripperProtocol.MANEUVER_KEEP_LEFT; // 0x28
                 if (nextIconCode == TripperProtocol.NEXT_NONE) nextIconCode = TripperProtocol.NEXT_KEEP_LEFT;
             } else {
@@ -301,12 +387,12 @@ public class TurnByTurnService extends NotificationListenerService {
         } else if (fullPrompt.contains("direita") || fullPrompt.contains("right")) {
             if (fullPrompt.contains("acentuada") || fullPrompt.contains("fechada") || fullPrompt.contains("sharp")) {
                 iconCode = TripperProtocol.MANEUVER_SHARP_RIGHT; // 0x17
-            } else if (fullPrompt.contains("suave") || fullPrompt.contains("slight")) {
+            } else if (fullPrompt.contains("suave") || fullPrompt.contains("slight") || fullPrompt.contains("leve")) {
                 iconCode = TripperProtocol.MANEUVER_SLIGHT_RIGHT; // 0x19
             } else if (fullPrompt.contains("saída") || fullPrompt.contains("saida") || fullPrompt.contains("exit") || fullPrompt.contains("rampa")) {
                 iconCode = TripperProtocol.MANEUVER_EXIT_RIGHT; // 0x2D
                 if (nextIconCode == TripperProtocol.NEXT_NONE) nextIconCode = TripperProtocol.NEXT_KEEP_RIGHT;
-            } else if (fullPrompt.contains("mantenha") || fullPrompt.contains("keep") || fullPrompt.contains("faixa")) {
+            } else if (fullPrompt.contains("mantenha") || fullPrompt.contains("keep") || fullPrompt.contains("faixa") || fullPrompt.contains("bifurcação")) {
                 iconCode = TripperProtocol.MANEUVER_KEEP_RIGHT; // 0x27
                 if (nextIconCode == TripperProtocol.NEXT_NONE) nextIconCode = TripperProtocol.NEXT_KEEP_RIGHT;
             } else {
@@ -319,5 +405,44 @@ public class TurnByTurnService extends NotificationListenerService {
         }
 
         return new NavStep(iconCode, distanceValue, distanceUnit, distanceMeters, nextIconCode, etaHour, etaMin, title, text);
+    }
+
+    /**
+     * Simula instruções de navegação para teste imediato de bancada / garagem no painel da moto.
+     * Alterna ciclicamente entre manobras reais e volta ao velocímetro.
+     */
+    public static void simulateNextStep() {
+        simulationStepIndex = (simulationStepIndex + 1) % 5;
+        NavStep step;
+        switch (simulationStepIndex) {
+            case 1:
+                step = parseNavigation("Em 450 m", "Vire à direita na Av. Paulista", "18:45", "", "");
+                break;
+            case 2:
+                step = parseNavigation("Em 120 m", "Entre na rotatória e pegue a 2ª saída", "18:45", "", "");
+                break;
+            case 3:
+                step = parseNavigation("A 35 metros", "Curva acentuada à esquerda na Rua Bela Cintra", "18:46", "", "");
+                break;
+            case 4:
+                step = parseNavigation("Você chegou", "Destino à direita", "18:47", "", "");
+                break;
+            default:
+                lastActiveStep = null;
+                TripperBridge.logStatic("🧪 [Simulação] Rota de teste finalizada. Retornando ao velocímetro.", "sys");
+                if (activeListener != null) {
+                    activeListener.onNavigationFinished();
+                }
+                return;
+        }
+
+        if (step != null) {
+            lastActiveStep = step;
+            TripperBridge.logStatic("🧪 [Simulação] Passo " + simulationStepIndex + ": " + 
+                TripperProtocol.getIconName(step.iconCode) + " a " + step.distanceValue + (step.distanceUnit == 0x02 ? "00m" : "m"), "tx");
+            if (activeListener != null) {
+                activeListener.onNavStepUpdated(step);
+            }
+        }
     }
 }

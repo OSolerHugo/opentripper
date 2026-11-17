@@ -33,7 +33,7 @@ jobs:
 
       - name: Renomear APK
         run: |
-          cp app/build/outputs/apk/debug/app-debug.apk opentripper-v0.5.2.apk
+          cp app/build/outputs/apk/debug/app-debug.apk opentripper-v0.5.3.apk
           cp app/build/outputs/apk/debug/app-debug.apk opentripper.apk
           ls -la opentripper*.apk
 
@@ -47,16 +47,17 @@ jobs:
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
-          gh release delete v0.5.2 --yes || true
+          gh release delete v0.5.3 --yes || true
           cat << 'EOF' > release_notes.md
-          ### Novidades do OpenTripper v0.5.2:
-          - 🧭 **Correção do Travamento em 100m:** Eliminação do fallback incorreto que forçava 100 metros ao receber notificações em segundo plano do Waze/Maps ("Conduzindo", etc.).
-          - 🔄 **Navegação Curva a Curva Completa:** Parser avançado de manobras para Waze e Google Maps, com suporte a curvas suaves, acentuadas, saídas de rodovia, retornos e rotatórias anti-horárias (padrão Brasil 0x32-0x3A).
-          - 🏍️ **Velocímetro Digital Desbloqueado:** Correção do bloqueio que impedia atualização de km/h em tempo real ao expirar ou alternar a rota de navegação.
-          - 💡 **Anel de LED Progressivo:** Cálculo dinâmico de intensidade por aproximação (byte 6) conforme a moto chega perto da manobra.
-          - 🛰️ **Serviço de Segundo Plano Sincronizado:** Conexão direta com TripperService mantendo Bluetooth e GPS ativos com celular no bolso e tela apagada.
-          - 🔗 **Link Permanente:** `https://github.com/OSolerHugo/opentripper/releases/latest/download/opentripper.apk`
+          ### Novidades do OpenTripper v0.5.3:
+          - 🛠️ **Correção Crítica no Parser do Maps e Waze:** Removido o filtro rígido que descartava notificações válidas contendo mensagens de status do sistema ("GPS conectado" do Google Maps ou "em segundo plano" do Waze).
+          - 🔄 **Reconexão Automática do Leitor de Notificações:** Mecanismo ativo com `requestRebind()` e reset de componente para resolver o bug clássico do Android que desvincula o `NotificationListenerService` silenciosamente após atualização de APK.
+          - 🔓 **Suporte a Configurações Restritas (Android 13, 14 e 15):** Botão de atalho para liberar configurações restritas em APKs instalados fora da Play Store.
+          - 🧪 **Botão de Teste e Simulação de Manobras:** Permite testar manobras (500m curva à direita, rotatória 2ª saída, curva acentuada 35m com anel de LED e bandeira de chegada) no painel da moto diretamente na garagem sem precisar rodar.
+          - ⏱️ **Estabilidade de Rota (Timeout de 2 minutos):** As manobras agora permanecem firmes na tela mesmo durante semáforos vermelhos e longos trechos retos sem novas notificações.
+          - 📋 **Diagnóstico e Logs em Tempo Real:** Status visual de conexão com o Android e log ao vivo de notificações recebidas na aba Navegação.
+          - 🔗 **Download Direto:** `https://github.com/OSolerHugo/opentripper/releases/latest/download/opentripper.apk`
           EOF
-          gh release create v0.5.2 opentripper-v0.5.2.apk opentripper.apk \
-            --title "OpenTripper v0.5.2 - Live Turn Navigation & Speedometer Fix" \
+          gh release create v0.5.3 opentripper-v0.5.3.apk opentripper.apk \
+            --title "OpenTripper v0.5.3 - Turn-by-Turn Interceptor & Rebind Fix" \
             --notes-file release_notes.md

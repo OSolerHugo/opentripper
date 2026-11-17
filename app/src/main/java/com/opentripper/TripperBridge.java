@@ -63,11 +63,26 @@ public class TripperBridge {
     private byte[] activeScreenPacket = null;
     private String activeScreenDesc = "PING_FW";
 
+    private static TripperBridge activeInstance = null;
+
+    public static void logStatic(String msg, String type) {
+        android.util.Log.d("OpenTripper", "[" + type + "] " + msg);
+        TripperBridge inst = activeInstance;
+        if (inst != null && inst.listener != null) {
+            inst.mainHandler.post(() -> {
+                if (inst.listener != null) {
+                    inst.listener.onLog(msg, type);
+                }
+            });
+        }
+    }
+
     public TripperBridge(Context ctx, Listener l) {
         this.context = ctx.getApplicationContext();
         this.listener = l;
         this.bluetoothManager = (BluetoothManager) context.getSystemService(Context.BLUETOOTH_SERVICE);
         this.prefs = context.getSharedPreferences("opentripper_prefs", Context.MODE_PRIVATE);
+        activeInstance = this;
     }
 
     public void setListener(Listener l) {

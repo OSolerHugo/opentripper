@@ -113,9 +113,10 @@ public class DisplayCoordinator implements TurnByTurnService.NavListener, Batter
         this.currentBearing = bearing;
         this.tripDistanceKm = tripDistanceKm;
 
-        boolean isNavigating = (currentNavStep != null && (System.currentTimeMillis() - currentNavStep.timestamp < 15000));
+        // Mantém a instrução de rota válida por até 2 minutos caso o piloto esteja num sinal vermelho ou trecho reto
+        boolean isNavigating = (currentNavStep != null && (System.currentTimeMillis() - currentNavStep.timestamp < 120000));
 
-        // Se a instrução expirou (> 15s sem novas notificações do Waze/Maps), limpa
+        // Se a instrução expirou (> 2 minutos sem novas notificações do Waze/Maps), limpa
         if (!isNavigating && currentNavStep != null) {
             currentNavStep = null;
         }
@@ -133,7 +134,7 @@ public class DisplayCoordinator implements TurnByTurnService.NavListener, Batter
      * Constrói o pacote atual e atualiza tanto o hardware do Tripper quanto o espelho do celular.
      */
     public synchronized void updateScreenAndMirror() {
-        boolean isNavigating = (currentNavStep != null && (System.currentTimeMillis() - currentNavStep.timestamp < 15000));
+        boolean isNavigating = (currentNavStep != null && (System.currentTimeMillis() - currentNavStep.timestamp < 120000));
 
         String modeName;
         int iconCode;

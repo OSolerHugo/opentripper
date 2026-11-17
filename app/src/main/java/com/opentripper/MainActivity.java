@@ -12,6 +12,7 @@ import android.content.ServiceConnection;
 import android.content.SharedPreferences;
 import android.content.pm.PackageManager;
 import android.graphics.Color;
+import android.net.Uri;
 import android.os.Build;
 import android.os.Bundle;
 import android.os.IBinder;
@@ -81,9 +82,13 @@ public class MainActivity extends Activity implements TripperBridge.Listener, Di
     private LinearLayout llNotificationWarning;
     private TextView tvNotificationStatus;
     private Button btnEnableNotifications;
+    private Button btnAppDetailsSettings;
+    private Button btnReconnectListener;
     private TextView tvNavManeuverTitle;
     private TextView tvNavDistance;
     private TextView tvNavEta;
+    private TextView tvLastNotificationIntercepted;
+    private Button btnSimulateManeuver;
 
     // Componentes - Tab 3: Cruzeiro
     private TextView tvCruiseSpeedLarge;
@@ -157,12 +162,33 @@ public class MainActivity extends Activity implements TripperBridge.Listener, Di
         llNotificationWarning = findViewById(R.id.llNotificationWarning);
         tvNotificationStatus = findViewById(R.id.tvNotificationStatus);
         btnEnableNotifications = findViewById(R.id.btnEnableNotifications);
+        btnAppDetailsSettings = findViewById(R.id.btnAppDetailsSettings);
+        btnReconnectListener = findViewById(R.id.btnReconnectListener);
         tvNavManeuverTitle = findViewById(R.id.tvNavManeuverTitle);
         tvNavDistance = findViewById(R.id.tvNavDistance);
         tvNavEta = findViewById(R.id.tvNavEta);
+        tvLastNotificationIntercepted = findViewById(R.id.tvLastNotificationIntercepted);
+        btnSimulateManeuver = findViewById(R.id.btnSimulateManeuver);
 
         btnEnableNotifications.setOnClickListener(v -> {
             startActivity(new Intent(Settings.ACTION_NOTIFICATION_LISTENER_SETTINGS));
+        });
+
+        btnAppDetailsSettings.setOnClickListener(v -> {
+            Intent intent = new Intent(Settings.ACTION_APPLICATION_DETAILS_SETTINGS);
+            intent.setData(Uri.parse("package:" + getPackageName()));
+            startActivity(intent);
+        });
+
+        btnReconnectListener.setOnClickListener(v -> {
+            TurnByTurnService.ensureServiceBound(this);
+            Toast.makeText(this, "🔄 Solicitando reconexão do leitor de notificações...", Toast.LENGTH_SHORT).show();
+            checkNotificationPermissionStatus();
+        });
+
+        btnSimulateManeuver.setOnClickListener(v -> {
+            TurnByTurnService.simulateNextStep();
+            Toast.makeText(this, "🧪 Teste de manobra enviado para o painel!", Toast.LENGTH_SHORT).show();
         });
 
         // 5. Inicializa Tab 3 (Cruzeiro)
@@ -301,18 +327,36 @@ public class MainActivity extends Activity implements TripperBridge.Listener, Di
     @Override
     protected void onResume() {
         super.onResume();
+        TurnByTurnService.ensureServiceBound(this);
         checkNotificationPermissionStatus();
     }
 
     private void checkNotificationPermissionStatus() {
         boolean granted = TurnByTurnService.isNotificationAccessGranted(this);
+        llNotificationWarning.setVisibility(View.VISIBLE);
+
         if (granted) {
-            llNotificationWarning.setVisibility(View.GONE);
+            btnEnableNotifications.setVisibility(View.GONE);
+            btnAppDetailsSettings.setVisibility(View.GONE);
+            btnReconnectListener.setVisibility(View.VISIBLE);
+
+            if (TurnByTurnService.isServiceConnected) {
+                tvNotificationStatus.setText("🟢 Leitor Ativo: Conectado e escutando o Android");
+                tvNotificationStatus.setTextColor(COLOR_GREEN);
+            } else {
+                tvNotificationStatus.setText("🟡 Leitor Autorizado: Aguardando vínculo do Android (toque em Reconectar)");
+                tvNotificationStatus.setTextColor(COLOR_AMBER);
+            }
         } else {
-            llNotificationWarning.setVisibility(View.VISIBLE);
-            tvNotificationStatus.setText("⚠️ Para ler o Google Maps e Waze, autorize o acesso:");
-            tvNotificationStatus.setTextColor(COLOR_AMBER);
             btnEnableNotifications.setVisibility(View.VISIBLE);
+            btnAppDetailsSettings.setVisibility(View.VISIBLE);
+            btnReconnectListener.setVisibility(View.GONE);
+            tvNotificationStatus.setText("⚠️ Para ler o Google Maps e Waze, autorize o acesso a notificações:");
+            tvNotificationStatus.setTextColor(COLOR_AMBER);
+        }
+
+        if (tvLastNotificationIntercepted != null) {
+            tvLastNotificationIntercepted.setText("Última notificação: " + TurnByTurnService.lastNotificationSummary);
         }
     }
 
@@ -347,6 +391,10 @@ public class MainActivity extends Activity implements TripperBridge.Listener, Di
             tvNavManeuverTitle.setText("Nenhuma rota ativa no momento");
             tvNavDistance.setText("-- m");
             tvNavEta.setText("Aguardando navegação do Waze / Maps");
+        }
+
+        if (tvLastNotificationIntercepted != null) {
+            tvLastNotificationIntercepted.setText("Última notificação: " + TurnByTurnService.lastNotificationSummary);
         }
 
         // Atualiza Tab 3 (Cruzeiro)

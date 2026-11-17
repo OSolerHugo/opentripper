@@ -50,6 +50,7 @@ public class TripperService extends Service implements TripperBridge.Listener {
         bridge = new TripperBridge(this, this);
         displayCoordinator = new DisplayCoordinator(this, bridge);
 
+        TurnByTurnService.ensureServiceBound(this);
         createNotificationChannel();
     }
 

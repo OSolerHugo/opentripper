@@ -299,7 +299,7 @@
                     android:textSize="11sp"
                     android:textStyle="bold" />
 
-                <!-- Banner de Permissão -->
+                <!-- Banner de Permissão e Status do Leitor -->
                 <LinearLayout
                     android:id="@+id/llNotificationWarning"
                     android:layout_width="match_parent"
@@ -324,9 +324,30 @@
                         android:layout_height="wrap_content"
                         android:layout_marginTop="8dp"
                         android:backgroundTint="#00C2D9"
-                        android:text="Autorizar Acesso ao Maps / Waze"
+                        android:text="Autorizar Acesso a Notificações"
                         android:textColor="#0A0E17"
                         android:textStyle="bold" />
+
+                    <Button
+                        android:id="@+id/btnAppDetailsSettings"
+                        style="?android:attr/buttonStyleSmall"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:layout_marginTop="6dp"
+                        android:backgroundTint="#1A273A"
+                        android:text="🔓 Liberar 'Configuração Restrita' (Android 13+)"
+                        android:textColor="#E8EDF3"
+                        android:visibility="gone" />
+
+                    <Button
+                        android:id="@+id/btnReconnectListener"
+                        style="?android:attr/buttonStyleSmall"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:layout_marginTop="6dp"
+                        android:backgroundTint="#162232"
+                        android:text="🔄 Reconectar Leitor de Notificações"
+                        android:textColor="#8B9BB4" />
                 </LinearLayout>
 
                 <!-- Card de Instrução Ativa -->
@@ -375,6 +396,44 @@
                         android:text="Chegada estimada: --:--"
                         android:textColor="#8B9BB4"
                         android:textSize="12sp" />
+                </LinearLayout>
+
+                <!-- Card de Diagnóstico e Teste -->
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="14dp"
+                    android:background="@drawable/bg_card"
+                    android:padding="14dp"
+                    android:orientation="vertical">
+
+                    <TextView
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="DIAGNÓSTICO &amp; TESTE"
+                        android:textColor="#8B9BB4"
+                        android:textSize="10sp"
+                        android:textStyle="bold" />
+
+                    <TextView
+                        android:id="@+id/tvLastNotificationIntercepted"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:layout_marginTop="6dp"
+                        android:text="Última notificação: Nenhuma capturada ainda"
+                        android:textColor="#50607A"
+                        android:textSize="11sp" />
+
+                    <Button
+                        android:id="@+id/btnSimulateManeuver"
+                        style="?android:attr/buttonStyleSmall"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:layout_marginTop="10dp"
+                        android:backgroundTint="#00C2D9"
+                        android:text="🧪 Testar Manobra no Painel da Moto"
+                        android:textColor="#0A0E17"
+                        android:textStyle="bold" />
                 </LinearLayout>
 
                 <TextView
